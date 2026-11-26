@@ -13,11 +13,22 @@ aur `GameAudioDirector` board dekh kar sahi waqt pe awaaz bajata hai:
 | Jeet | `sfx_win` (music thodi der dheema) |
 | Belt Jam | `sfx_jam` (music thodi der dheema) |
 | Music / Awaaz button | `sfx_ui_click` |
+| UI: panel khulna, star, coin, purchase, tala | `sfx_ui_popup`, `sfx_star`, `sfx_coin`, `sfx_purchase`, `sfx_locked` |
 
 Upar daayen kone mein **Music: ON/OFF** aur **Awaaz: ON/OFF** buttons hain (prototype ke liye).
-Pasand `PlayerPrefs` mein save hoti hai: `bf_music_on`, `bf_sfx_on`.
-Asal UI aane pe `AudioManager.ShowPrototypeButtons = false` karein aur apne buttons se
-`AudioManager.Instance.SetMusic(bool)` / `SetSfx(bool)` bulayein.
+Pasand `PlayerPrefs` mein save hoti hai: `bf_music`, `bf_sfx` (wohi keys jo `UI.UISettings` use karta hai),
+is liye UI ke Sound / Music switch bhi khud kaam karte hain.
+
+Asal UI (UI branch) ke saath jodne ke liye startup pe yeh do lines:
+
+```csharp
+BazaarFlow.UI.UIServices.PlaySfx = BazaarFlow.AudioManager.PlayUi;
+BazaarFlow.AudioManager.ShowPrototypeButtons = false;
+```
+
+`PlayUi` UI ke ids samajhta hai: ui_tap, ui_back, ui_close, ui_toggle, ui_popup, ui_star, ui_coin,
+ui_purchase, ui_locked. `ui_win` aur `ui_jam` jaan boojh kar khamosh hain, kyunke jeet / Jam ki awaaz
+`GameAudioDirector` pehle hi bajata hai.
 
 Code se awaaz: `AudioManager.Play(Sfx.Tap)`, `AudioManager.PlayPickup()`, `AudioManager.PlayStinger(Sfx.Win)`.
 

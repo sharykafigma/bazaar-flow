@@ -22,6 +22,11 @@ original.
 | `Resources/BazaarFlowAudio/sfx_jam.wav` | Motor grinding down + sad two-note fall on Belt Jam | 1.2 s | `sfx_jam()` |
 | `Resources/BazaarFlowAudio/sfx_ui_click.wav` | Button click | 0.06 s | `sfx_ui_click()` |
 | `Resources/BazaarFlowAudio/sfx_unlock.wav` | Lock opening when a locked shop opens | 0.5 s | `sfx_unlock()` |
+| `Resources/BazaarFlowAudio/sfx_ui_popup.wav` | Airy swoosh when a panel opens | 0.25 s | `sfx_ui_popup()` |
+| `Resources/BazaarFlowAudio/sfx_star.wav` | Bell for each star on the win screen | 0.6 s | `sfx_star()` |
+| `Resources/BazaarFlowAudio/sfx_coin.wav` | "Ka-ching" when coins are counted | 0.3 s | `sfx_coin()` |
+| `Resources/BazaarFlowAudio/sfx_purchase.wav` | Coin cascade + santoor chord after a purchase | 1.2 s | `sfx_purchase()` |
+| `Resources/BazaarFlowAudio/sfx_locked.wav` | Low double buzz for locked / not allowed | 0.3 s | `sfx_locked()` |
 | `Resources/BazaarFlowAudio/music_bazaar_loop.ogg` | Light bazaar loop: tanpura drone, tabla, santoor, ghungroo (96 BPM, seamless) | 20 s | `music_loop()` |
 
 To change a sound, edit its function in the script and run

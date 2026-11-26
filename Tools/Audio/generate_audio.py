@@ -230,6 +230,57 @@ def sfx_unlock():
     return normalize(fade_out(out, 0.05), 0.6)
 
 
+def sfx_ui_popup():
+    # Panel opens: short upward airy swoosh + soft pluck.
+    t = t_axis(0.25)
+    n = rng.uniform(-1, 1, len(t))
+    n = lowpass(highpass(n, 800), 5000) * np.sin(np.pi * np.clip(t / 0.18, 0, 1)) * 0.5
+    out = n.copy()
+    mix_into(out, pluck(783.99, 0.25, bright=0.7), int(0.08 * SR), 0.5)
+    return normalize(fade_out(out, 0.03), 0.5)
+
+
+def sfx_star():
+    # Star earned on the win screen: bright bell.
+    t = t_axis(0.6)
+    x = (np.sin(2 * np.pi * 1760 * t) * np.exp(-t / 0.2)
+         + 0.45 * np.sin(2 * np.pi * 2637 * t) * np.exp(-t / 0.12)
+         + 0.25 * np.sin(2 * np.pi * 4186 * t) * np.exp(-t / 0.06))
+    x *= np.clip(t / 0.002, 0, 1)
+    return normalize(fade_out(x, 0.05), 0.6)
+
+
+def sfx_coin():
+    # Coin counted: two-step "ka-ching".
+    out = np.zeros(int(SR * 0.3))
+    for i, f in enumerate([1975.5, 2637.0]):
+        t = t_axis(0.22)
+        tone = np.sin(2 * np.pi * f * t) * np.exp(-t / 0.06)
+        mix_into(out, tone, int(i * 0.06 * SR), 1.0)
+    return normalize(fade_out(out, 0.02), 0.5)
+
+
+def sfx_purchase():
+    # Purchase done: coin cascade + bright santoor chord.
+    out = np.zeros(int(SR * 1.2))
+    coin = sfx_coin()
+    for i in range(5):
+        mix_into(out, coin, int(i * 0.06 * SR), 0.5)
+    for f in (659.25, 830.61, 987.77, 1318.5):
+        mix_into(out, pluck(f, 0.9, bright=0.8, damp=0.998), int(0.3 * SR), 0.5)
+    return normalize(fade_out(out, 0.1), 0.75)
+
+
+def sfx_locked():
+    # Not allowed / locked: low double buzz.
+    out = np.zeros(int(SR * 0.3))
+    for i in range(2):
+        t = t_axis(0.09)
+        tone = np.sign(np.sin(2 * np.pi * 140 * t)) * np.exp(-t / 0.05)
+        mix_into(out, lowpass(tone, 1200), int(i * 0.12 * SR), 1.0)
+    return normalize(fade_out(out, 0.02), 0.5)
+
+
 # ---------------------------------------------------------------- Music
 
 def music_loop():
@@ -324,6 +375,11 @@ def main():
         "sfx_jam.wav": sfx_jam,
         "sfx_ui_click.wav": sfx_ui_click,
         "sfx_unlock.wav": sfx_unlock,
+        "sfx_ui_popup.wav": sfx_ui_popup,
+        "sfx_star.wav": sfx_star,
+        "sfx_coin.wav": sfx_coin,
+        "sfx_purchase.wav": sfx_purchase,
+        "sfx_locked.wav": sfx_locked,
     }
     for name, fn in sfx.items():
         print("writing", write_wav(name, fn()))
