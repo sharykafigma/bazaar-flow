@@ -372,13 +372,13 @@ namespace BazaarFlow
             var coinsStyle = new GUIStyle(_hud) { alignment = TextAnchor.UpperRight };
             GUI.Label(new Rect(Screen.width * 0.5f, u * 2, Screen.width * 0.5f - u * 2, u * 5), $"Coins {Coins}", coinsStyle);
             int free = _belt.CountFree();
-            GUI.Label(new Rect(u * 2, u * 6, Screen.width, u * 4), $"Belt khali: {free}/{_belt.SlotCount}", _small);
+            GUI.Label(new Rect(u * 2, u * 6, Screen.width, u * 4), $"Free slots: {free}/{_belt.SlotCount}", _small);
             BoosterBar(u);
 
             // Shop order labels
             foreach (var s in _shops)
             {
-                string text = s.IsDone ? "Band" : s.IsLocked ? "Tala" : $"{s.Remaining}";
+                string text = s.IsDone ? "Done" : s.IsLocked ? "Locked" : $"{s.Remaining}";
                 if (!s.IsDone && !s.IsLocked && s.OrdersLeft > 1) text += $"\n+{s.OrdersLeft - 1}";
                 WorldLabel(s.transform.position + new Vector3(0, -0.05f, 0), text, _label, u);
             }
@@ -393,7 +393,7 @@ namespace BazaarFlow
                 WorldLabel(_belt.PointAt(_belt.GateS) + new Vector3(0, -0.75f, 0), _gateQueue.Count.ToString(), _label, u);
 
             if (LevelNumber == 1 && State == GameState.Playing && _deliveries == 0 && _gateQueue.Count == 0)
-                CenterText(u, "Neeche crate pe tap karo!", Screen.height * 0.47f);
+                CenterText(u, "Tap a crate below!", Screen.height * 0.47f);
 
             if (State == GameState.Won) WinPanel(u);
             else if (State == GameState.Jammed) JamPanel(u);
@@ -403,7 +403,7 @@ namespace BazaarFlow
         {
             float bw = u * 11, bh = u * 5, y = u * 7;
             float x = Screen.width - u * 2 - bw;
-            if (GUI.Button(new Rect(x, y, bw, bh), "Dukaan", _button)) ShopUI.Open();
+            if (GUI.Button(new Rect(x, y, bw, bh), "Shop", _button)) ShopUI.Open();
             if (State != GameState.Playing) return;
             foreach (var b in Economy.LiveBoosters)
             {
@@ -421,21 +421,21 @@ namespace BazaarFlow
 
         void WinPanel(float u)
         {
-            Panel(u, "Shabash!", _rewardDoubled ? $"+{_lastReward * 2} coins (dugne!)" : $"+{_lastReward} coins");
+            Panel(u, "Well done!", _rewardDoubled ? $"+{_lastReward * 2} coins (doubled!)" : $"+{_lastReward} coins");
             int row = 0;
-            if (!_rewardDoubled && GUI.Button(ButtonRect(u, row++), "Dugne coins (ad)", _button)) DoubleCoinsWithAd();
-            if (GUI.Button(ButtonRect(u, row), "Agla level", _button)) NextLevel();
+            if (!_rewardDoubled && GUI.Button(ButtonRect(u, row++), "Double coins (ad)", _button)) DoubleCoinsWithAd();
+            if (GUI.Button(ButtonRect(u, row), "Next level", _button)) NextLevel();
         }
 
         void JamPanel(float u)
         {
-            Panel(u, "Belt Jam!", "Koi dukaan belt ka maal nahi le rahi");
+            Panel(u, "Belt Jam!", "No shop wants the goods on the belt");
             int row = 0;
             if (!_continueUsed && GUI.Button(ButtonRect(u, row++), "Continue (ad)", _button)) ContinueWithAd();
             if (Economy.BoosterCount(BoosterType.Jhaaru) > 0 && CanUseBooster(BoosterType.Jhaaru)
-                && GUI.Button(ButtonRect(u, row++), $"Jhaaru lagao ({Economy.BoosterCount(BoosterType.Jhaaru)})", _button))
+                && GUI.Button(ButtonRect(u, row++), $"Use {Boosters.Name(BoosterType.Jhaaru)} ({Economy.BoosterCount(BoosterType.Jhaaru)})", _button))
                 UseBooster(BoosterType.Jhaaru);
-            if (GUI.Button(ButtonRect(u, row++), "Dobara khelo", _button)) RetryAfterJam();
+            if (GUI.Button(ButtonRect(u, row++), "Try again", _button)) RetryAfterJam();
             if (Economy.StarterOfferActive && GUI.Button(ButtonRect(u, row), "Starter Pack offer!", _button)) ShopUI.Open();
         }
 

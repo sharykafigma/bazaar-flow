@@ -32,6 +32,7 @@ Password, bank details ya keystore kabhi chat mein na bhejein.
 ## 3. Google Play Console mein products (bilkul yehi IDs)
 
 Play Console > Monetize with Play > Products > **In-app products** > Create product:
+Product ke naam aur description **English** mein rakhein (game worldwide hai), maslan "No Ads", "Starter Pack", "Coin Pouch".
 
 | Product ID | Qisam | Qeemat (USD) | Kya milta hai |
 | --- | --- | --- | --- |
@@ -87,4 +88,4 @@ Test karne ke liye: Play Console > Settings > **License testing** mein apna Gmai
 | `Monetization/Editor/MonetizationDefines.cs` | Package hon to `BF_LEVELPLAY` / `BF_IAP` on karta hai |
 
 Gameplay se jor: `GameManager` mein `ContinueWithAd`, `DoubleCoinsWithAd`, `NextLevel`, `RetryAfterJam`, `UseBooster`.
-Boosters abhi chalte hain: **Jhaaru** aur **Chashma**. Extra Patri aur Ulti Belt gameplay mein ban jayen to `Economy.LiveBoosters` mein daal dein, shop aur packs khud un ko shamil kar lenge.
+Boosters abhi chalte hain: **Sweep** (code mein Jhaaru) aur **Reveal** (Chashma). Extra Belt (ExtraPatri) aur Reverse (UltiBelt) gameplay mein ban jayen to `Economy.LiveBoosters` mein daal dein, shop aur packs khud un ko shamil kar lenge.

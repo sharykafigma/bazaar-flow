@@ -39,7 +39,7 @@ namespace BazaarFlow
         void OnGranted(string id)
         {
             var p = ShopCatalog.Get(id);
-            Toast(p != null ? $"Shukriya! {p.Title} mil gaya" : "Shukriya!");
+            Toast(p != null ? $"Thank you! {p.Title} added" : "Thank you!");
         }
 
         void Toast(string text)
@@ -61,9 +61,9 @@ namespace BazaarFlow
 
             float pad = u * 2;
             float w = Screen.width - pad * 2;
-            GUI.Label(new Rect(pad, pad, w, u * 6), "Dukaan", _title);
+            GUI.Label(new Rect(pad, pad, w, u * 6), "Shop", _title);
             GUI.Label(new Rect(pad, pad + u * 6, w, u * 4), $"Coins: {Economy.Coins}", _row);
-            if (GUI.Button(new Rect(Screen.width - pad - u * 12, pad, u * 12, u * 6), "Band", _btn)) Close();
+            if (GUI.Button(new Rect(Screen.width - pad - u * 12, pad, u * 12, u * 6), "Close", _btn)) Close();
 
             float top = pad + u * 11;
             float viewH = Screen.height - top - u * 10;
@@ -77,18 +77,18 @@ namespace BazaarFlow
             // Free daily booster (rewarded ad)
             if (Economy.FreeBoosterAvailable)
             {
-                GUI.Label(new Rect(0, y, lw, rowH), "Roz ka muft booster\n(ad dekh ke)", _row);
-                if (Button(new Rect(lw, y + u, bw, rowH - u * 2), "Ad dekho"))
+                GUI.Label(new Rect(0, y, lw, rowH), "Free daily booster\n(watch an ad)", _row);
+                if (Button(new Rect(lw, y + u, bw, rowH - u * 2), "Watch ad"))
                 {
                     _busy = true;
                     AdsService.ShowRewarded("free_booster", ok =>
                     {
                         _busy = false;
-                        if (!ok) { Toast("Abhi ad nahi mila, thori der baad"); return; }
+                        if (!ok) { Toast("No ad available, try again soon"); return; }
                         var live = Economy.LiveBoosters;
                         var b = live[UnityEngine.Random.Range(0, live.Length)];
                         Economy.ClaimFreeBooster(b);
-                        Toast($"{Boosters.Name(b)} mil gaya!");
+                        Toast($"You got {Boosters.Name(b)}!");
                     });
                 }
                 y += rowH;
@@ -105,15 +105,15 @@ namespace BazaarFlow
 
             // No Ads
             if (!Economy.NoAds)
-                ProductRow(ShopCatalog.Get(MonetizationConfig.ProductNoAds), "No Ads\nBeech ke ads band (inaam wale ads rahenge)",
+                ProductRow(ShopCatalog.Get(MonetizationConfig.ProductNoAds), "No Ads\nRemoves ads between levels (reward ads stay optional)",
                     ref y, lw, bw, rowH, u);
 
             // Boosters for coins
             foreach (var b in Economy.LiveBoosters)
             {
-                GUI.Label(new Rect(0, y, lw, rowH), $"{Boosters.Name(b)} (paas: {Economy.BoosterCount(b)})\n{Boosters.Description(b)}", _row);
+                GUI.Label(new Rect(0, y, lw, rowH), $"{Boosters.Name(b)} (owned: {Economy.BoosterCount(b)})\n{Boosters.Description(b)}", _row);
                 if (Button(new Rect(lw, y + u, bw, rowH - u * 2), $"{MonetizationConfig.BoosterCoinPrice} coins"))
-                    Toast(Economy.TryBuyBoosterWithCoins(b) ? $"{Boosters.Name(b)} khareed liya" : "Coins kam hain");
+                    Toast(Economy.TryBuyBoosterWithCoins(b) ? $"Bought {Boosters.Name(b)}" : "Not enough coins");
                 y += rowH;
             }
 
@@ -121,23 +121,23 @@ namespace BazaarFlow
             foreach (var p in ShopCatalog.Products)
             {
                 if (p.Kind == ProductKind.BoosterBundle)
-                    ProductRow(p, $"{p.Title}\nHar booster x{MonetizationConfig.BoosterBundleEach}", ref y, lw, bw, rowH, u);
+                    ProductRow(p, $"{p.Title}\nEvery booster x{MonetizationConfig.BoosterBundleEach}", ref y, lw, bw, rowH, u);
                 else if (p.Kind == ProductKind.Coins)
                     ProductRow(p, $"{p.Title}\n{p.Coins} coins", ref y, lw, bw, rowH, u);
             }
             GUI.EndScrollView();
 
-            if (GUI.Button(new Rect(pad, Screen.height - u * 8, w, u * 6), "Purani khareed wapas lao (Restore)", _btn) && !_busy)
+            if (GUI.Button(new Rect(pad, Screen.height - u * 8, w, u * 6), "Restore purchases", _btn) && !_busy)
             {
                 _busy = true;
                 IapService.Restore(ok =>
                 {
                     _busy = false;
-                    Toast(ok ? "Restore ho gaya" : "Restore nahi hua");
+                    Toast(ok ? "Purchases restored" : "Restore failed");
                 });
             }
 
-            if (_busy) GUI.Label(new Rect(0, Screen.height * 0.45f, Screen.width, u * 5), "Intezar...", _title);
+            if (_busy) GUI.Label(new Rect(0, Screen.height * 0.45f, Screen.width, u * 5), "Please wait...", _title);
             if (Time.realtimeSinceStartup < _toastUntil)
                 GUI.Label(new Rect(0, Screen.height * 0.5f, Screen.width, u * 5), _toast, _title);
         }
@@ -163,7 +163,7 @@ namespace BazaarFlow
                 IapService.Purchase(p.Id, ok =>
                 {
                     _busy = false;
-                    if (!ok) Toast("Khareed mukammal nahi hui");
+                    if (!ok) Toast("Purchase not completed");
                 });
             }
             y += rowH;

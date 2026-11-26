@@ -15,13 +15,13 @@ namespace BazaarFlow
     {
         public const int Count = 4;
 
-        static readonly string[] Names = { "Extra Patri", "Jhaaru", "Chashma", "Ulti Belt" };
+        static readonly string[] Names = { "Extra Belt", "Sweep", "Reveal", "Reverse" };
         static readonly string[] Info =
         {
-            "Belt pe 4 khane aur",
-            "Ek rang ka maal wapas godown",
-            "Saare chhupe crate dikhao",
-            "Belt ek chakkar ulta",
+            "Adds 4 slots to the belt",
+            "Sends one colour back to the warehouse",
+            "Shows every hidden crate",
+            "Runs the belt backwards for one lap",
         };
 
         public static string Name(BoosterType b) => Names[(int)b];
@@ -59,12 +59,12 @@ namespace BazaarFlow
             new ShopProduct(MonetizationConfig.ProductStarterPack, ProductKind.StarterPack, false, "Starter Pack", "$1.99",
                 MonetizationConfig.StarterPackCoins),
             new ShopProduct(MonetizationConfig.ProductBoosterBundle, ProductKind.BoosterBundle, true, "Booster Bundle", "$2.99"),
-            new ShopProduct(MonetizationConfig.ProductCoins1, ProductKind.Coins, true, "Mutthi bhar sikke", "$0.99", 300),
-            new ShopProduct(MonetizationConfig.ProductCoins2, ProductKind.Coins, true, "Thaili", "$2.99", 1000),
-            new ShopProduct(MonetizationConfig.ProductCoins3, ProductKind.Coins, true, "Bara thaila", "$4.99", 1800),
-            new ShopProduct(MonetizationConfig.ProductCoins4, ProductKind.Coins, true, "Sandooq", "$9.99", 4000),
-            new ShopProduct(MonetizationConfig.ProductCoins5, ProductKind.Coins, true, "Khazana", "$14.99", 6500),
-            new ShopProduct(MonetizationConfig.ProductCoins6, ProductKind.Coins, true, "Seth ka khazana", "$19.99", 9000),
+            new ShopProduct(MonetizationConfig.ProductCoins1, ProductKind.Coins, true, "Handful of Coins", "$0.99", 300),
+            new ShopProduct(MonetizationConfig.ProductCoins2, ProductKind.Coins, true, "Coin Pouch", "$2.99", 1000),
+            new ShopProduct(MonetizationConfig.ProductCoins3, ProductKind.Coins, true, "Coin Bag", "$4.99", 1800),
+            new ShopProduct(MonetizationConfig.ProductCoins4, ProductKind.Coins, true, "Coin Chest", "$9.99", 4000),
+            new ShopProduct(MonetizationConfig.ProductCoins5, ProductKind.Coins, true, "Treasure Trove", "$14.99", 6500),
+            new ShopProduct(MonetizationConfig.ProductCoins6, ProductKind.Coins, true, "Merchant's Fortune", "$19.99", 9000),
         };
 
         public static ShopProduct Get(string id)
