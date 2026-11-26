@@ -43,11 +43,9 @@ namespace BazaarFlow
         /// <summary>Fires whenever coins, boosters or No Ads change.</summary>
         public static event Action Changed;
 
-        /// <summary>
-        /// Boosters the gameplay code can actually use right now. Only these are sold and granted.
-        /// Add ExtraPatri / UltiBelt here once GameManager.UseBooster supports them.
-        /// </summary>
-        public static readonly BoosterType[] LiveBoosters = { BoosterType.Jhaaru, BoosterType.Chashma };
+        /// <summary>Boosters the gameplay code can use. Only these are sold and granted.</summary>
+        public static readonly BoosterType[] LiveBoosters =
+            { BoosterType.ExtraPatri, BoosterType.Jhaaru, BoosterType.Chashma, BoosterType.UltiBelt };
 
         public static SaveData Data
         {

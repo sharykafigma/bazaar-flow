@@ -223,6 +223,7 @@ namespace BazaarFlow.Visuals
         ItemColor? _color;
         bool _done, _locked;
         float _introT = 1f, _introDelay, _popT = 1f, _flipT = 1f, _closeT = 1f;
+        SpriteRenderer _bubble2, _shutterSr;
 
         public void Init(Shop shop, int variant, float introDelay)
         {
@@ -231,6 +232,8 @@ namespace BazaarFlow.Visuals
             BazaarArt.HidePlaceholder(t, "Body");
             BazaarArt.HidePlaceholder(t, "Order");
             BazaarArt.HidePlaceholder(t, "Lock");
+            BazaarArt.HidePlaceholder(t, "Order2");
+            BazaarArt.HidePlaceholder(t, "Shutter");
 
             BazaarArt.Add(t, "Shadow", BazaarArt.Get("fx_shadow", 1.5f), 1, new Vector3(0, -0.66f, 0.02f), new Color(1, 1, 1, 0.6f));
             var stall = BazaarArt.Add(t, "Stall", BazaarArt.Get("stall_" + variant, StallSize, StallPivot), 2);
@@ -239,6 +242,10 @@ namespace BazaarFlow.Visuals
             if (_bubbleSr != null) _bubble = _bubbleSr.transform;
             _closed = BazaarArt.Add(t, "Closed", BazaarArt.Get("stall_closed", StallSize, StallPivot), 4, new Vector3(0, 0, -0.02f));
             _lock = BazaarArt.Add(t, "Chains", BazaarArt.Get("stall_lock", StallSize, StallPivot), 5, new Vector3(0, 0, -0.03f));
+            // Twin orders: a smaller second bubble. Monsoon: the closed shutter, tinted rain-grey.
+            _bubble2 = BazaarArt.Add(t, "Bubble2", BazaarArt.Get("bubble_chai", 0.5f), 4, new Vector3(0.36f, 0.3f, -0.015f));
+            _shutterSr = BazaarArt.Add(t, "Monsoon", BazaarArt.Get("stall_closed", StallSize, StallPivot), 4, new Vector3(0, 0, -0.025f));
+            if (_shutterSr != null) _shutterSr.enabled = false;
 
             _done = shop.IsDone;
             _locked = shop.IsLocked;
@@ -259,6 +266,19 @@ namespace BazaarFlow.Visuals
             bool show = !_shop.IsDone && _shop.Current != null;
             _bubbleSr.enabled = show;
             if (show) _bubbleSr.sprite = BazaarArt.Get("bubble_" + BazaarArt.Goods(_shop.Current.color), 0.76f);
+            if (_bubble2 != null)
+            {
+                bool twin = show && _shop.Current.IsTwin && _shop.RemainingSecond > 0;
+                _bubble2.enabled = twin;
+                if (twin) _bubble2.sprite = BazaarArt.Get("bubble_" + BazaarArt.Goods(_shop.Current.color2), 0.5f);
+            }
+            if (_shutterSr != null)
+            {
+                bool warn = _shop.HasShutters && !_shop.ShutterClosed && !_shop.IsDone && _shop.ShutterTimer < 0.8f;
+                bool on = (_shop.ShutterClosed && !_shop.IsDone) || (warn && Mathf.Repeat(_shop.ShutterTimer, 0.25f) < 0.12f);
+                _shutterSr.enabled = on;
+                if (on) _shutterSr.color = new Color(0.7f, 0.78f, 0.9f, _shop.ShutterClosed ? 1f : 0.45f);
+            }
         }
 
         void ApplyIntro()

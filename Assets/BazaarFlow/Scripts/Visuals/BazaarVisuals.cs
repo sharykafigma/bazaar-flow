@@ -26,7 +26,7 @@ namespace BazaarFlow.Visuals
             if (Instance != null) return;
             if (!BazaarArt.Ready)
             {
-                Debug.LogWarning("Bazaar Flow: art not found in Resources/BazaarArt, keeping placeholder look.");
+                Debug.LogWarning("Belt Jam: art not found in Resources/BazaarArt, keeping placeholder look.");
                 return;
             }
             var go = new GameObject("BazaarVisuals");

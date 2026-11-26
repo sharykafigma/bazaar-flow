@@ -20,7 +20,7 @@ namespace BazaarFlow.UI
     }
 
     /// <summary>
-    /// Bazaar Flow UI look: warm truck-art bazaar colours, chunky candy buttons, cream paper cards with maroon ribbons.
+    /// Belt Jam UI look: warm truck-art bazaar colours, chunky candy buttons, cream paper cards with maroon ribbons.
     /// Every screen reads its colours and sizes from here, so a restyle is one file.
     /// </summary>
     public static class UITheme

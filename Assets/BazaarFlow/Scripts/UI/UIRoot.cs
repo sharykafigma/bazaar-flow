@@ -28,6 +28,9 @@ namespace BazaarFlow.UI
         public WinScreen Win { get; private set; }
         public JamScreen Jam { get; private set; }
         public SettingsScreen Settings { get; private set; }
+        public DailyRewardScreen Daily { get; private set; }
+        public OutOfLivesScreen OutOfLives { get; private set; }
+        public BoosterBar BoosterBar { get; private set; }
         public ShopScreen Shop { get; private set; }
         public UIFx Fx { get; private set; }
 
@@ -75,15 +78,54 @@ namespace BazaarFlow.UI
             Jam = Add<JamScreen>("BeltJam");
             Shop = Add<ShopScreen>("Shop");
             Settings = Add<SettingsScreen>("Settings");
+            Daily = Add<DailyRewardScreen>("DailyReward");
+            OutOfLives = Add<OutOfLivesScreen>("OutOfLives");
+
+            // Boosters along the bottom of the HUD, lives on the main menu (opposite the coins).
+            BoosterBar = BoosterBar.Create(Hud.transform, this);
+            var lives = LivesBadge.Create(Menu.transform);
+            ((RectTransform)lives.transform).Place(new Vector2(0f, 1f), new Vector2(210f, -250f), new Vector2(330f, 92f));
             Fx = UIFactory.Rect("FX", transform).Stretch().gameObject.AddComponent<UIFx>();
 
             _legacyHudOff = TryDisableLegacyHud();
+
+            GameManager.LevelStarted += OnLevelStarted;
+            GameManager.RushChanged += OnRush;
+            Progress.StreakRewarded += OnStreak;
+        }
+
+        void OnDestroy()
+        {
+            GameManager.LevelStarted -= OnLevelStarted;
+            GameManager.RushChanged -= OnRush;
+            Progress.StreakRewarded -= OnStreak;
+        }
+
+        void OnLevelStarted(int level)
+        {
+            var intro = Game != null && Game.Level != null ? Game.Level.intro : null;
+            if (intro != null) Tween.Delay(this, 0.8f, () => Fx.Toast(intro));
+            else if (Game != null && Game.Level != null && Game.Level.difficulty == Difficulty.VeryHard)
+                Tween.Delay(this, 0.6f, () => Fx.Toast("Super hard level! Double coins if you win."));
+            else if (Game != null && Game.Level != null && Game.Level.difficulty == Difficulty.Hard)
+                Tween.Delay(this, 0.6f, () => Fx.Toast("Hard level! Bonus coins if you win."));
+        }
+
+        void OnRush(bool on)
+        {
+            if (on && InGame) Fx.Toast("RUSH HOUR!");
+        }
+
+        void OnStreak(BoosterType booster, int streak)
+        {
+            Tween.Delay(this, 1.6f, () => Fx.Toast($"{streak} wins in a row! Free {Boosters.Name(booster)}"));
         }
 
         void Start()
         {
             FindGame();
             ShowMenu();
+            if (DailyReward.Available) Tween.Delay(this, 0.9f, () => { if (Menu.IsOpen) Daily.Show(); });
         }
 
         T Add<T>(string name) where T : UIScreen
@@ -176,6 +218,7 @@ namespace BazaarFlow.UI
         {
             FindGame();
             if (Game == null) { Debug.LogWarning("[UI] No GameManager in scene."); return; }
+            if (!Lives.CanPlay) { OutOfLives.Open(() => Play(level)); return; }
             Menu.Hide();
             Map.Hide();
             Win.Hide();
@@ -216,6 +259,7 @@ namespace BazaarFlow.UI
         public void Restart(bool afterLoss)
         {
             if (Game == null) return;
+            if (!Lives.CanPlay) { OutOfLives.Open(() => Restart(afterLoss)); return; }
             if (afterLoss) UIServices.OnRetryAfterLoss?.Invoke();
             Pause.Hide();
             Jam.Hide();
@@ -244,8 +288,8 @@ namespace BazaarFlow.UI
             _resultPending = true;
             if (!_legacyHudOff) SetGameRunning(false);
             int level = Game.LevelNumber;
-            int reward = 10 + level; // mirrors GameManager.Win()
-            int stars = _continueUsed ? 2 : 3;
+            int reward = Game.LastReward;
+            int stars = Game.LastStars;
             UIServices.Sfx("ui_win");
             UIServices.Haptic(HapticStrength.Medium);
             Tween.Delay(this, 0.35f, () => Win.Open(level, reward, stars));
@@ -314,6 +358,8 @@ namespace BazaarFlow.UI
         void OnBack()
         {
             if (Settings.IsOpen) { Settings.Hide(); return; }
+            if (Daily.IsOpen) { Daily.Hide(); return; }
+            if (OutOfLives.IsOpen) { OutOfLives.Hide(); return; }
             if (Shop.IsOpen) { Shop.Hide(); return; }
             if (Pause.IsOpen) { ResumeGame(); return; }
             if (Map.IsOpen) { Map.Hide(); Menu.Show(); return; }

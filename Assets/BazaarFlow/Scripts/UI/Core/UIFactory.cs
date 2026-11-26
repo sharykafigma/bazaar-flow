@@ -3,7 +3,7 @@ using UnityEngine.UI;
 
 namespace BazaarFlow.UI
 {
-    /// <summary>Builders for the Bazaar Flow widget kit. All sizes are in reference pixels (1080 x 1920 canvas).</summary>
+    /// <summary>Builders for the Belt Jam widget kit. All sizes are in reference pixels (1080 x 1920 canvas).</summary>
     public static class UIFactory
     {
         // ------------------------------------------------------------ layout basics
