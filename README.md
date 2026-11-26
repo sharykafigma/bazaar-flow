@@ -32,8 +32,12 @@ Phone pe: File > Build Profiles > Android > Switch Platform, phir Build And Run.
 | `Scripts/Gameplay/Godown.cs` | Crates ki qataarein |
 | `Scripts/Gameplay/GameManager.cs` | Level chalana, tap, jeet/haar, prototype HUD |
 
-Progress `PlayerPrefs` mein save hota hai (`bf_level`, `bf_coins`). Level 1 se dobara shuru karne ke liye Edit > Clear All PlayerPrefs.
+Progress `PlayerPrefs` mein save hota hai (`bf_level`, aur coins/boosters `bf_save` mein). Level 1 se dobara shuru karne ke liye Edit > Clear All PlayerPrefs.
+
+## Ads aur purchases
+
+Rewarded/interstitial ads (LevelPlay), Google Play purchases (Unity IAP 5), coins/boosters ka save aur Dukaan screen `Scripts/Monetization` mein hain. Accounts, IDs aur Play Console products ki list: [Docs/MONETIZATION_SETUP.md](Docs/MONETIZATION_SETUP.md).
 
 ## Abhi kya nahi hai
 
-Asal art, awaaz, ads, IAP, Apna Bazaar meta, lives. Yeh design doc ke milestones 2-3 mein hain.
+Asal art, awaaz, Apna Bazaar meta, lives. Yeh design doc ke milestones 2-3 mein hain.

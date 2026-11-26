@@ -15,7 +15,6 @@ namespace BazaarFlow
     public class GameManager : MonoBehaviour
     {
         const string LevelKey = "bf_level";
-        const string CoinsKey = "bf_coins";
 
         // Board layout in world units (portrait camera, about 9 x 16 units visible).
         static readonly Vector2 BeltCenter = new Vector2(0f, 1.6f);
@@ -33,7 +32,7 @@ namespace BazaarFlow
 
         public GameState State { get; private set; }
         public int LevelNumber { get; private set; }
-        public int Coins { get; private set; }
+        public int Coins => Economy.Coins;
 
         LevelData _level;
         Transform _root;
@@ -44,11 +43,13 @@ namespace BazaarFlow
         Camera _cam;
         int _deliveries;
         bool _continueUsed;
+        int _lastReward;
+        bool _rewardDoubled;
+        bool _waitingForAd;
 
         void Start()
         {
             _cam = Camera.main;
-            Coins = PlayerPrefs.GetInt(CoinsKey, 0);
             LoadLevel(Mathf.Max(1, PlayerPrefs.GetInt(LevelKey, 1)));
         }
 
@@ -61,6 +62,9 @@ namespace BazaarFlow
             _gateQueue.Clear();
             _deliveries = 0;
             _continueUsed = false;
+            _rewardDoubled = false;
+            _waitingForAd = false;
+            AdsService.SetBannerVisible(false);
 
             LevelNumber = number;
             _level = LevelLibrary.Get(number);
@@ -113,6 +117,7 @@ namespace BazaarFlow
         void Update()
         {
             if (_belt == null) return;
+            if (AdsService.AdShowing || ShopUI.IsOpen) return; // pause under ads and the shop
             if (State == GameState.Playing) HandleInput();
             if (State != GameState.Jammed) Simulate(Time.deltaTime);
             if (State == GameState.Playing) CheckEnd();
@@ -208,16 +213,124 @@ namespace BazaarFlow
                 foreach (var shop in _shops)
                     if (shop.WillNeed(item.Color)) return;
             State = GameState.Jammed;
+            AdsService.SetBannerVisible(true);
         }
 
         void Win()
         {
             State = GameState.Won;
-            int reward = 10 + LevelNumber;
-            Coins += reward;
-            PlayerPrefs.SetInt(CoinsKey, Coins);
+            _lastReward = 10 + LevelNumber;
+            Economy.AddCoins(_lastReward);
             PlayerPrefs.SetInt(LevelKey, LevelNumber + 1);
             PlayerPrefs.Save();
+            AdsService.SetBannerVisible(true);
+        }
+
+        // ---------------- Monetization hooks ----------------
+
+        /// <summary>Rewarded ad on the win screen: gives the level reward a second time.</summary>
+        public void DoubleCoinsWithAd()
+        {
+            if (_rewardDoubled || _waitingForAd) return;
+            _waitingForAd = true;
+            AdsService.ShowRewarded("double_coins", ok =>
+            {
+                _waitingForAd = false;
+                if (!ok) return;
+                _rewardDoubled = true;
+                Economy.AddCoins(_lastReward);
+            });
+        }
+
+        /// <summary>Win screen "next": may show an interstitial (pacing rules in MonetizationConfig) first.</summary>
+        public void NextLevel()
+        {
+            if (_waitingForAd) return;
+            _waitingForAd = true;
+            int next = LevelNumber + 1;
+            AdsService.OnLevelWon(LevelNumber, () => LoadLevel(next));
+        }
+
+        /// <summary>Belt Jam "continue": rewarded ad, then 6 goods go back to the godown.</summary>
+        public void ContinueWithAd()
+        {
+            if (_continueUsed || _waitingForAd) return;
+            _waitingForAd = true;
+            AdsService.ShowRewarded("continue", ok =>
+            {
+                _waitingForAd = false;
+                if (ok && State == GameState.Jammed) ContinueAfterJam();
+            });
+        }
+
+        /// <summary>Belt Jam "try again".</summary>
+        public void RetryAfterJam()
+        {
+            AdsService.OnLevelLost();
+            LoadLevel(LevelNumber);
+        }
+
+        public bool CanUseBooster(BoosterType b)
+        {
+            if (_godown == null || State == GameState.Won) return false;
+            switch (b)
+            {
+                case BoosterType.Jhaaru: return _belt.CountFree() < _belt.SlotCount;
+                case BoosterType.Chashma:
+                    foreach (var col in _godown.Columns)
+                        foreach (var c in col) if (c.Hidden) return true;
+                    return false;
+                default: return false; // ExtraPatri / UltiBelt: not built yet
+            }
+        }
+
+        /// <summary>Uses one booster from the wallet. Returns false (and keeps the booster) if it would do nothing.</summary>
+        public bool UseBooster(BoosterType b)
+        {
+            if (!CanUseBooster(b) || !Economy.TryUseBooster(b)) return false;
+            switch (b)
+            {
+                case BoosterType.Jhaaru: SweepMostCommonColour(); break;
+                case BoosterType.Chashma: RevealAllCrates(); break;
+            }
+            if (State == GameState.Jammed && _belt.CountFree() > 0)
+            {
+                State = GameState.Playing;
+                AdsService.SetBannerVisible(false);
+            }
+            return true;
+        }
+
+        /// <summary>Jhaaru: every good of the most common colour on the belt goes back to the godown.</summary>
+        void SweepMostCommonColour()
+        {
+            var slots = _belt.Slots;
+            var counts = new int[GameColors.Count];
+            foreach (var it in slots) if (it != null) counts[(int)it.Color]++;
+            int best = 0;
+            for (int i = 1; i < counts.Length; i++) if (counts[i] > counts[best]) best = i;
+            var color = (ItemColor)best;
+            int removed = 0;
+            for (int i = 0; i < slots.Length; i++)
+            {
+                if (slots[i] == null || slots[i].Color != color) continue;
+                Destroy(slots[i].gameObject);
+                slots[i] = null;
+                removed++;
+            }
+            while (removed > 0)
+            {
+                int n = Mathf.Min(6, removed);
+                _godown.PushFront(new CrateDef(color, n));
+                removed -= n;
+            }
+        }
+
+        /// <summary>Chashma: shows the colour of every hidden crate.</summary>
+        void RevealAllCrates()
+        {
+            foreach (var col in _godown.Columns)
+                foreach (var c in col) c.Reveal();
         }
 
         /// <summary>
@@ -260,6 +373,7 @@ namespace BazaarFlow
             GUI.Label(new Rect(Screen.width * 0.5f, u * 2, Screen.width * 0.5f - u * 2, u * 5), $"Coins {Coins}", coinsStyle);
             int free = _belt.CountFree();
             GUI.Label(new Rect(u * 2, u * 6, Screen.width, u * 4), $"Belt khali: {free}/{_belt.SlotCount}", _small);
+            BoosterBar(u);
 
             // Shop order labels
             foreach (var s in _shops)
@@ -285,17 +399,44 @@ namespace BazaarFlow
             else if (State == GameState.Jammed) JamPanel(u);
         }
 
+        void BoosterBar(float u)
+        {
+            float bw = u * 11, bh = u * 5, y = u * 7;
+            float x = Screen.width - u * 2 - bw;
+            if (GUI.Button(new Rect(x, y, bw, bh), "Dukaan", _button)) ShopUI.Open();
+            if (State != GameState.Playing) return;
+            foreach (var b in Economy.LiveBoosters)
+            {
+                x -= bw + u;
+                int n = Economy.BoosterCount(b);
+                GUI.enabled = CanUseBooster(b) || n == 0;
+                if (GUI.Button(new Rect(x, y, bw, bh), $"{Boosters.Name(b)} {(n > 0 ? n.ToString() : "+")}", _button))
+                {
+                    if (n > 0) UseBooster(b);
+                    else ShopUI.Open();
+                }
+                GUI.enabled = true;
+            }
+        }
+
         void WinPanel(float u)
         {
-            Panel(u, "Shabash!", $"+{10 + LevelNumber} coins");
-            if (GUI.Button(ButtonRect(u, 0), "Agla level", _button)) LoadLevel(LevelNumber + 1);
+            Panel(u, "Shabash!", _rewardDoubled ? $"+{_lastReward * 2} coins (dugne!)" : $"+{_lastReward} coins");
+            int row = 0;
+            if (!_rewardDoubled && GUI.Button(ButtonRect(u, row++), "Dugne coins (ad)", _button)) DoubleCoinsWithAd();
+            if (GUI.Button(ButtonRect(u, row), "Agla level", _button)) NextLevel();
         }
 
         void JamPanel(float u)
         {
             Panel(u, "Belt Jam!", "Koi dukaan belt ka maal nahi le rahi");
-            if (!_continueUsed && GUI.Button(ButtonRect(u, 0), "Continue (ad)", _button)) ContinueAfterJam();
-            if (GUI.Button(ButtonRect(u, _continueUsed ? 0 : 1), "Dobara khelo", _button)) LoadLevel(LevelNumber);
+            int row = 0;
+            if (!_continueUsed && GUI.Button(ButtonRect(u, row++), "Continue (ad)", _button)) ContinueWithAd();
+            if (Economy.BoosterCount(BoosterType.Jhaaru) > 0 && CanUseBooster(BoosterType.Jhaaru)
+                && GUI.Button(ButtonRect(u, row++), $"Jhaaru lagao ({Economy.BoosterCount(BoosterType.Jhaaru)})", _button))
+                UseBooster(BoosterType.Jhaaru);
+            if (GUI.Button(ButtonRect(u, row++), "Dobara khelo", _button)) RetryAfterJam();
+            if (Economy.StarterOfferActive && GUI.Button(ButtonRect(u, row), "Starter Pack offer!", _button)) ShopUI.Open();
         }
 
         void Panel(float u, string title, string sub)
