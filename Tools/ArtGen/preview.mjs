@@ -49,15 +49,15 @@ label(gate[0], gate[1] - 0.75, '3');
 const spots = [[0, .35], [0, .65], [1, .35], [3, .65], [1, .75], [3, .25]];
 const edgeS = (e, t) => [BW * t, BW + BH * t, BW + BH + BW * t, 2 * BW + BH + BH * t][e];
 const inward = s => { s = ((s % L) + L) % L; return s < BW ? [0, -1] : s < BW + BH ? [-1, 0] : s < 2 * BW + BH ? [0, 1] : [1, 0]; };
-const shopState = [['chai', '4', 0], ['choori', '3', 1], ['aam', '5', 2], [null, 'Band', 3], ['diya', 'Tala', 5], ['lattoo', '2', 4]];
+const shopState = [['chai', '4', 0], ['choori', '3', 1], ['aam', '5', 2], [null, 'Done', 3], ['diya', 'Locked', 5], ['lattoo', '2', 4]];
 for (let i = 0; i < 6; i++) {
   const s = edgeS(...spots[i]), p = pointAt(s), n = inward(s), x = p[0] + n[0] * 1.05, y = p[1] + n[1] * 1.05;
   const [g, txt, st] = shopState[i];
   spr('fx_shadow', x, y - 0.68, 1.4, 0.35);
   spr('stall_' + st, x, y, 1.45, 1.45, '', 0.5, 0.52);
-  if (g && txt !== 'Tala') spr('bubble_' + g, x, y, 0.74, 0.74);
-  if (txt === 'Band') spr('stall_closed', x, y, 1.45, 1.45, '', 0.5, 0.52);
-  if (txt === 'Tala') { spr('bubble_' + g, x, y, 0.74, 0.74); spr('stall_lock', x, y, 1.45, 1.45, '', 0.5, 0.52); }
+  if (g && txt !== 'Locked') spr('bubble_' + g, x, y, 0.74, 0.74);
+  if (txt === 'Done') spr('stall_closed', x, y, 1.45, 1.45, '', 0.5, 0.52);
+  if (txt === 'Locked') { spr('bubble_' + g, x, y, 0.74, 0.74); spr('stall_lock', x, y, 1.45, 1.45, '', 0.5, 0.52); }
   label(x, y - 0.05, txt, txt.length > 2 ? 26 : 34);
 }
 // godown

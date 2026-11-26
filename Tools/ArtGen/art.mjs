@@ -139,7 +139,9 @@ export function bubble(key, colorName, size = 128) {
     <circle cx="50" cy="50" r="36.5" fill="url(#bg)" stroke="${OL}" stroke-width="2"/>
   </g>
   <g transform="translate(22,22) scale(.56)" filter="url(#sil)">${goodsBody[key]()}</g>
-  <path d="M26,38 A27,27 0 0 1 50,22" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" opacity=".55"/>
+  <path d="M17,47 A33,33 0 0 1 83,47 Q50,36 17,47 Z" fill="#fff" opacity=".28"/>
+  <path d="M26,36 A27,27 0 0 1 44,23" fill="none" stroke="#fff" stroke-width="4.5" stroke-linecap="round" opacity=".8"/>
+  <circle cx="24" cy="44" r="2.4" fill="#fff" opacity=".8"/>
   ${[0, 1, 2, 3, 4, 5, 6, 7].map(i => { const a = i * Math.PI / 4; return `<circle cx="${(50 + 40.3 * Math.cos(a)).toFixed(1)}" cy="${(50 + 40.3 * Math.sin(a)).toFixed(1)}" r="1.7" fill="${c}"/>`; }).join('')}`, '0 0 100 100');
 }
 
@@ -147,13 +149,16 @@ export function bubble(key, colorName, size = 128) {
 const wood = '#c98a4b', woodD = '#8f5528', woodL = '#e2ad6e';
 function crateBox() {
   return `
-  <rect x="5" y="24" width="90" height="72" rx="7" fill="${wood}" ${sw}/>
+  <defs><linearGradient id="wd" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${woodL}"/><stop offset=".25" stop-color="${wood}"/><stop offset="1" stop-color="#a86a34"/></linearGradient></defs>
+  <rect x="5" y="24" width="90" height="72" rx="7" fill="url(#wd)" ${sw}/>
   <path d="M9,47 H91 M9,71 H91" stroke="${woodD}" stroke-width="2"/>
   <path d="M9,26 H91" stroke="${woodL}" stroke-width="3" opacity=".8"/>
   ${[[15, 35], [60, 40], [30, 59], [78, 84], [20, 86]].map(([x, y]) => `<path d="M${x},${y} q6,-2 10,0" stroke="${woodD}" stroke-width="1.4" fill="none" opacity=".7"/>`).join('')}
   <rect x="5" y="24" width="90" height="72" rx="7" fill="none" stroke="${woodD}" stroke-width="0"/>
   <path d="M5,31 V89 Q5,96 12,96 H20 V24 H12 Q5,24 5,31 Z M95,31 V89 Q95,96 88,96 H80 V24 H88 Q95,24 95,31 Z" fill="${woodD}" opacity=".55"/>
   ${[[12.5, 31], [87.5, 31], [12.5, 89], [87.5, 89]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="2.3" fill="#f0d39a" stroke="${OL}" stroke-width="1.2"/>`).join('')}
+  <path d="M12,27 H88" stroke="#fff" stroke-width="2.4" stroke-linecap="round" opacity=".55"/>
+  <rect x="5" y="88" width="90" height="8" rx="4" fill="#000" opacity=".14"/>
   <rect x="5" y="24" width="90" height="72" rx="7" fill="none" ${sw}/>`;
 }
 export function crate(key, colorName, size = 256) {
@@ -165,8 +170,10 @@ export function crate(key, colorName, size = 256) {
     <linearGradient id="pl" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${shade(c, 0.12)}"/><stop offset="1" stop-color="${d}"/></linearGradient></defs>
     <g filter="url(#st)">${peek}</g>
     <g filter="url(#st)">${crateBox()}
+    <rect x="24" y="42.5" width="52" height="38" rx="9" fill="${shade(c, -0.5)}"/>
     <rect x="24" y="41" width="52" height="38" rx="9" fill="url(#pl)" stroke="${OL}" stroke-width="2.4"/>
-    <rect x="28" y="44.5" width="44" height="6" rx="3" fill="#fff" opacity=".28"/>
+    <path d="M28,58 V50 Q28,44.5 34,44.5 H66 Q72,44.5 72,50 V58 Q50,52 28,58 Z" fill="#fff" opacity=".32"/>
+    <rect x="27" y="73" width="46" height="3.5" rx="1.75" fill="${shade(c, -0.4)}" opacity=".5"/>
     <circle cx="20" cy="60" r="0" fill="none"/></g>`, '0 0 100 100');
 }
 export function crateHidden(size = 256) {
@@ -246,7 +253,7 @@ const STALLS = [
 export const STALL_COUNT = STALLS.length;
 
 function stallDecor(i) {
-  const mini = (key, x, y, s = 0.2, r = 0) => `<g transform="translate(${x},${y}) rotate(${r}) scale(${s}) translate(-50,-50)">${goodsBody[key]()}</g>`;
+  const mini = (key, x, y, s = 0.2, r = 0) => `<g transform="translate(${x},${y}) rotate(${r}) scale(${s * 1.3}) translate(-50,-50)">${goodsBody[key]()}</g>`;
   switch (i) {
     case 0: return `
       <path d="M12,70 h14 l-2,-12 h-10 z" fill="#c0c6cc" ${sw}/><path d="M26,62 q6,-2 6,-8" fill="none" stroke="${OL}" stroke-width="2.4"/>
@@ -283,14 +290,17 @@ export function stall(i, size = 256) {
     <rect x="9" y="22" width="82" height="52" fill="url(#wall)"/>
     <path d="M12,34 H88" stroke="#8a5238" stroke-width="2"/>
     <rect x="7" y="20" width="6" height="76" rx="2" fill="#a86a36" ${sw}/><rect x="87" y="20" width="6" height="76" rx="2" fill="#a86a36" ${sw}/>
+    <linearGradient id="aw" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".35"/><stop offset=".45" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".22"/></linearGradient>
     <path d="M6,30 L10,10 L90,10 L94,30 Z" fill="${s.a}"/>${stripes}
+    <path d="M6,30 L10,10 L90,10 L94,30 Z" fill="url(#aw)"/>
     <path d="M6,30 L10,10 L90,10 L94,30 Z" fill="none" ${sw}/>
     <path d="M10,10 L90,10" stroke="#fff" stroke-width="2" opacity=".5"/>
     ${scallops}
     <rect x="4" y="3" width="92" height="9" rx="3" fill="#8f5528" ${sw}/>
     <path d="M30,3 q20,-6 40,0" fill="#ffd84a" ${sw}/>
     ${stallDecor(i)}
-    <rect x="5" y="72" width="90" height="24" rx="4" fill="#b8763c" ${sw}/>
+    <linearGradient id="ct" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#d9965a"/><stop offset="1" stop-color="#9c5e2c"/></linearGradient>
+    <rect x="5" y="72" width="90" height="24" rx="4" fill="url(#ct)" ${sw}/>
     <path d="M5,76 H95" stroke="#e2ad6e" stroke-width="2.5"/>
     <path d="M9,79 H91 V90 Q70,96 50,90 Q30,96 9,90 Z" fill="${s.cloth}" stroke="${OL}" stroke-width="1.8"/>
     ${[18, 34, 50, 66, 82].map(x => `<circle cx="${x}" cy="85" r="2" fill="#fff6e0" opacity=".9"/>`).join('')}
