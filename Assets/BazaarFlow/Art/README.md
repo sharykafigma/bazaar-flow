@@ -1,6 +1,6 @@
-# Bazaar Flow art
+# Belt Jam: Conveyor Sort art
 
-All art is original and generated from code, so it can be changed and re-rendered at any size.
+Game name: **Belt Jam: Conveyor Sort** (code folders keep the old working name `BazaarFlow`). All art is original and generated from code, so it can be changed and re-rendered at any size.
 
 - **Edit (v2, current):** `Tools/ArtGen/style.mjs` (shared style kit) and `Tools/ArtGen/v2/` (`goods.mjs`, `stalls.mjs`, `env.mjs`; contract in `v2/README.md`). `Tools/ArtGen/store.mjs` makes the icon and feature graphic. `art.mjs` + `render.mjs` are the old v1 look, kept for reference.
 - **Render:** `node Tools/ArtGen/render2.mjs` (needs Node + Playwright with Chromium). `node Tools/ArtGen/store.mjs` for store art.
