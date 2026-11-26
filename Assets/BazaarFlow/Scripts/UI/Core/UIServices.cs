@@ -94,6 +94,14 @@ namespace BazaarFlow.UI
         public static event Action WalletChanged;
         public static void NotifyWalletChanged() => WalletChanged?.Invoke();
 
+        // -------------------------------------------------------------- level flow
+
+        /// <summary>Runs before Next Level (interstitial pacing etc.). Must call next() exactly once.</summary>
+        public static Action<int, Action> BeforeNextLevel = (level, next) => next?.Invoke();
+
+        /// <summary>Called when the player retries from the Belt Jam screen (loss streak, offers).</summary>
+        public static Action OnRetryAfterLoss = () => { };
+
         // -------------------------------------------------------------- progress
 
         /// <summary>Highest level the player may start.</summary>

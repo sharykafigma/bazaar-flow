@@ -210,9 +210,13 @@ namespace BazaarFlow.UI
             SetGameRunning(true);
         }
 
-        public void Restart()
+        public void Restart() => Restart(false);
+
+        /// <summary>Reload the current level. afterLoss = true when it comes from the Belt Jam screen.</summary>
+        public void Restart(bool afterLoss)
         {
             if (Game == null) return;
+            if (afterLoss) UIServices.OnRetryAfterLoss?.Invoke();
             Pause.Hide();
             Jam.Hide();
             Win.Hide();
@@ -224,8 +228,12 @@ namespace BazaarFlow.UI
         {
             if (Game == null) return;
             Win.Hide();
-            Game.LoadLevel(Game.LevelNumber + 1);
-            BeginLevel();
+            int level = Game.LevelNumber;
+            UIServices.BeforeNextLevel(level, () =>
+            {
+                Game.LoadLevel(level + 1);
+                BeginLevel();
+            });
         }
 
         public void OpenShop() => Shop.Show();

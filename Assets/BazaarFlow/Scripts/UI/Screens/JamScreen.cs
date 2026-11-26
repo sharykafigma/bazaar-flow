@@ -51,7 +51,7 @@ namespace BazaarFlow.UI
 
             _retry = UIFactory.Button(content, "Try Again", UITheme.Cream3D, new Vector2(720f, 140f), UIIcon.Retry, 52);
             ((RectTransform)_retry.transform).Place(new Vector2(0.5f, 1f), new Vector2(0f, -780f), new Vector2(720f, 140f));
-            _retry.Clicked += () => Root.Restart();
+            _retry.Clicked += () => Root.Restart(true);
         }
 
         public void Open(bool canContinue)
