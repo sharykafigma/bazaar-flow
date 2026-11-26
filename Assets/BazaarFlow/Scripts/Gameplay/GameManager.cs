@@ -1,0 +1,346 @@
+using System.Collections.Generic;
+using UnityEngine;
+#if ENABLE_INPUT_SYSTEM
+using UnityEngine.InputSystem;
+#endif
+
+namespace BazaarFlow
+{
+    public enum GameState { Playing, Won, Jammed }
+
+    /// <summary>
+    /// Runs one level: builds the board, moves the belt, lets shops grab goods, handles taps and win / Belt Jam.
+    /// The HUD is plain OnGUI for the prototype; it becomes real UI in the art milestone.
+    /// </summary>
+    public class GameManager : MonoBehaviour
+    {
+        const string LevelKey = "bf_level";
+        const string CoinsKey = "bf_coins";
+
+        // Board layout in world units (portrait camera, about 9 x 16 units visible).
+        static readonly Vector2 BeltCenter = new Vector2(0f, 1.6f);
+        const float BeltWidth = 7.2f;
+        const float BeltHeight = 7.0f;
+        const float ShopInset = 1.05f;
+
+        /// <summary>Where shops sit, as a fraction along each belt edge. Order = order shops are filled in.</summary>
+        static readonly (int edge, float t)[] ShopSpots =
+        {
+            (0, 0.35f), (0, 0.65f), // top
+            (1, 0.35f), (3, 0.65f), // right upper, left upper
+            (1, 0.75f), (3, 0.25f), // right lower, left lower
+        };
+
+        public GameState State { get; private set; }
+        public int LevelNumber { get; private set; }
+        public int Coins { get; private set; }
+
+        LevelData _level;
+        Transform _root;
+        Belt _belt;
+        Godown _godown;
+        readonly List<Shop> _shops = new List<Shop>();
+        readonly Queue<ItemColor> _gateQueue = new Queue<ItemColor>();
+        Camera _cam;
+        int _deliveries;
+        bool _continueUsed;
+
+        void Start()
+        {
+            _cam = Camera.main;
+            Coins = PlayerPrefs.GetInt(CoinsKey, 0);
+            LoadLevel(Mathf.Max(1, PlayerPrefs.GetInt(LevelKey, 1)));
+        }
+
+        // ---------------- Level setup ----------------
+
+        public void LoadLevel(int number)
+        {
+            if (_root != null) Destroy(_root.gameObject);
+            _shops.Clear();
+            _gateQueue.Clear();
+            _deliveries = 0;
+            _continueUsed = false;
+
+            LevelNumber = number;
+            _level = LevelLibrary.Get(number);
+            if (!_level.IsBalanced(out var problem))
+                Debug.LogError($"Level {number} is not balanced: {problem}");
+
+            _root = new GameObject("Level " + number).transform;
+
+            _belt = new GameObject("Belt").AddComponent<Belt>();
+            _belt.transform.SetParent(_root, false);
+            _belt.Init(BeltCenter, BeltWidth, BeltHeight, _level.beltSlots, _level.beltSpeed);
+
+            // Gate between the belt and the godown.
+            Vector3 gatePos = _belt.PointAt(_belt.GateS);
+            SpriteFactory.Create("Gate", _root, SpriteFactory.Square, GameColors.Gate,
+                gatePos + new Vector3(0, -0.75f, 0.05f), new Vector2(0.9f, 0.7f), 1);
+
+            for (int i = 0; i < _level.shops.Count && i < ShopSpots.Length; i++)
+            {
+                var (edge, t) = ShopSpots[i];
+                float s = EdgeToS(edge, t);
+                Vector3 pos = _belt.PointAt(s) + _belt.InwardAt(s) * ShopInset;
+                var shop = new GameObject("Shop" + i).AddComponent<Shop>();
+                shop.transform.SetParent(_root, false);
+                shop.Init(i, _level.shops[i], s, pos);
+                shop.Completed += OnShopCompleted;
+                _shops.Add(shop);
+            }
+
+            _godown = new GameObject("Godown").AddComponent<Godown>();
+            _godown.transform.SetParent(_root, false);
+            _godown.Init(_level, new Vector2(0f, BeltCenter.y - BeltHeight * 0.5f - 1.75f), 6.5f);
+
+            State = GameState.Playing;
+        }
+
+        float EdgeToS(int edge, float t)
+        {
+            switch (edge)
+            {
+                case 0: return BeltWidth * t;
+                case 1: return BeltWidth + BeltHeight * t;
+                case 2: return BeltWidth + BeltHeight + BeltWidth * t;
+                default: return 2 * BeltWidth + BeltHeight + BeltHeight * t;
+            }
+        }
+
+        // ---------------- Loop ----------------
+
+        void Update()
+        {
+            if (_belt == null) return;
+            if (State == GameState.Playing) HandleInput();
+            if (State != GameState.Jammed) Simulate(Time.deltaTime);
+            if (State == GameState.Playing) CheckEnd();
+        }
+
+        void Simulate(float dt)
+        {
+            var slots = _belt.Slots;
+            int n = slots.Length;
+            var prev = new float[n];
+            for (int i = 0; i < n; i++) prev[i] = _belt.SlotS(i);
+            float moved = _belt.Advance(dt);
+
+            for (int i = 0; i < n; i++)
+            {
+                var item = slots[i];
+                if (item != null)
+                {
+                    foreach (var shop in _shops)
+                    {
+                        if (shop.CanTakeNow(item.Color) && _belt.Crossed(prev[i], moved, shop.PathS))
+                        {
+                            slots[i] = null;
+                            shop.Take(item);
+                            _deliveries++;
+                            break;
+                        }
+                    }
+                }
+                else if (_gateQueue.Count > 0 && _belt.Crossed(prev[i], moved, _belt.GateS))
+                {
+                    var color = _gateQueue.Dequeue();
+                    slots[i] = BeltItem.Spawn(color, _belt.PointAt(_belt.SlotS(i)), _root);
+                }
+            }
+            _belt.UpdateVisuals();
+        }
+
+        void HandleInput()
+        {
+            if (!PointerDown(out Vector2 screen)) return;
+            if (_gateQueue.Count > 0) return; // one crate at a time through the gate
+
+            Vector2 world = _cam.ScreenToWorldPoint(new Vector3(screen.x, screen.y, -_cam.transform.position.z));
+            var crate = _godown.FrontCrateAt(world, out int column);
+            if (crate == null) return;
+
+            for (int i = 0; i < crate.Count; i++) _gateQueue.Enqueue(crate.Color);
+            _godown.RemoveFront(column);
+        }
+
+        static bool PointerDown(out Vector2 pos)
+        {
+#if ENABLE_INPUT_SYSTEM
+            var p = Pointer.current;
+            if (p != null && p.press.wasPressedThisFrame)
+            {
+                pos = p.position.ReadValue();
+                return true;
+            }
+            pos = default;
+            return false;
+#else
+            if (Input.GetMouseButtonDown(0))
+            {
+                pos = Input.mousePosition;
+                return true;
+            }
+            pos = default;
+            return false;
+#endif
+        }
+
+        void OnShopCompleted(Shop done)
+        {
+            foreach (var s in _shops)
+                if (s.IsLocked && s.LockedUntil == done.Index) s.Unlock();
+        }
+
+        void CheckEnd()
+        {
+            bool allDone = true;
+            foreach (var s in _shops) if (!s.IsDone) { allDone = false; break; }
+            if (allDone)
+            {
+                Win();
+                return;
+            }
+
+            // Belt Jam: every slot is full and nothing on the belt is wanted by any open shop.
+            if (_belt.CountFree() > 0) return;
+            foreach (var item in _belt.Slots)
+                foreach (var shop in _shops)
+                    if (shop.WillNeed(item.Color)) return;
+            State = GameState.Jammed;
+        }
+
+        void Win()
+        {
+            State = GameState.Won;
+            int reward = 10 + LevelNumber;
+            Coins += reward;
+            PlayerPrefs.SetInt(CoinsKey, Coins);
+            PlayerPrefs.SetInt(LevelKey, LevelNumber + 1);
+            PlayerPrefs.Save();
+        }
+
+        /// <summary>
+        /// Rewarded-ad continue (no ad SDK yet, so it is free in the prototype):
+        /// sends up to 6 unwanted goods back to the godown as crates.
+        /// </summary>
+        public void ContinueAfterJam()
+        {
+            var slots = _belt.Slots;
+            var counts = new Dictionary<ItemColor, int>();
+            int removed = 0;
+            for (int i = 0; i < slots.Length && removed < 6; i++)
+            {
+                var item = slots[i];
+                if (item == null) continue;
+                counts.TryGetValue(item.Color, out int c);
+                counts[item.Color] = c + 1;
+                Destroy(item.gameObject);
+                slots[i] = null;
+                removed++;
+            }
+            foreach (var kv in counts) _godown.PushFront(new CrateDef(kv.Key, kv.Value));
+            _continueUsed = true;
+            State = GameState.Playing;
+        }
+
+        // ---------------- Prototype HUD ----------------
+
+        GUIStyle _label, _big, _button, _small, _hud;
+
+        void OnGUI()
+        {
+            if (_belt == null) return;
+            float u = Screen.height / 100f; // 1% of screen height
+            EnsureStyles(u);
+
+            // Top bar
+            GUI.Label(new Rect(u * 2, u * 2, Screen.width * 0.5f, u * 5), $"Level {LevelNumber}", _hud);
+            var coinsStyle = new GUIStyle(_hud) { alignment = TextAnchor.UpperRight };
+            GUI.Label(new Rect(Screen.width * 0.5f, u * 2, Screen.width * 0.5f - u * 2, u * 5), $"Coins {Coins}", coinsStyle);
+            int free = _belt.CountFree();
+            GUI.Label(new Rect(u * 2, u * 6, Screen.width, u * 4), $"Belt khali: {free}/{_belt.SlotCount}", _small);
+
+            // Shop order labels
+            foreach (var s in _shops)
+            {
+                string text = s.IsDone ? "Band" : s.IsLocked ? "Tala" : $"{s.Remaining}";
+                if (!s.IsDone && !s.IsLocked && s.OrdersLeft > 1) text += $"\n+{s.OrdersLeft - 1}";
+                WorldLabel(s.transform.position + new Vector3(0, -0.05f, 0), text, _label, u);
+            }
+
+            // Crate counts
+            foreach (var col in _godown.Columns)
+                foreach (var crate in col)
+                    WorldLabel(crate.transform.position, crate.Hidden ? "?" : crate.Count.ToString(), _label, u);
+
+            // Gate queue
+            if (_gateQueue.Count > 0)
+                WorldLabel(_belt.PointAt(_belt.GateS) + new Vector3(0, -0.75f, 0), _gateQueue.Count.ToString(), _label, u);
+
+            if (LevelNumber == 1 && State == GameState.Playing && _deliveries == 0 && _gateQueue.Count == 0)
+                CenterText(u, "Neeche crate pe tap karo!", Screen.height * 0.47f);
+
+            if (State == GameState.Won) WinPanel(u);
+            else if (State == GameState.Jammed) JamPanel(u);
+        }
+
+        void WinPanel(float u)
+        {
+            Panel(u, "Shabash!", $"+{10 + LevelNumber} coins");
+            if (GUI.Button(ButtonRect(u, 0), "Agla level", _button)) LoadLevel(LevelNumber + 1);
+        }
+
+        void JamPanel(float u)
+        {
+            Panel(u, "Belt Jam!", "Koi dukaan belt ka maal nahi le rahi");
+            if (!_continueUsed && GUI.Button(ButtonRect(u, 0), "Continue (ad)", _button)) ContinueAfterJam();
+            if (GUI.Button(ButtonRect(u, _continueUsed ? 0 : 1), "Dobara khelo", _button)) LoadLevel(LevelNumber);
+        }
+
+        void Panel(float u, string title, string sub)
+        {
+            var r = new Rect(Screen.width * 0.1f, Screen.height * 0.3f, Screen.width * 0.8f, Screen.height * 0.34f);
+            GUI.Box(r, GUIContent.none);
+            GUI.Box(r, GUIContent.none);
+            GUI.Label(new Rect(r.x, r.y + u * 2, r.width, u * 7), title, _big);
+            GUI.Label(new Rect(r.x, r.y + u * 9, r.width, u * 4), sub, new GUIStyle(_small) { alignment = TextAnchor.MiddleCenter });
+        }
+
+        Rect ButtonRect(float u, int index)
+        {
+            float w = Screen.width * 0.6f;
+            return new Rect((Screen.width - w) * 0.5f, Screen.height * 0.3f + u * 15 + index * u * 8, w, u * 6.5f);
+        }
+
+        void CenterText(float u, string text, float y)
+        {
+            GUI.Label(new Rect(0, y, Screen.width, u * 5), text, new GUIStyle(_hud) { alignment = TextAnchor.MiddleCenter });
+        }
+
+        void WorldLabel(Vector3 world, string text, GUIStyle style, float u)
+        {
+            Vector3 sp = _cam.WorldToScreenPoint(world);
+            var r = new Rect(sp.x - u * 5, Screen.height - sp.y - u * 3, u * 10, u * 6);
+            GUI.Label(r, text, style);
+        }
+
+        void EnsureStyles(float u)
+        {
+            if (_label != null && _label.fontSize == Mathf.RoundToInt(u * 2.6f)) return;
+            _label = new GUIStyle(GUI.skin.label)
+            {
+                fontSize = Mathf.RoundToInt(u * 2.6f),
+                fontStyle = FontStyle.Bold,
+                alignment = TextAnchor.MiddleCenter,
+                normal = { textColor = Color.white }
+            };
+            _small = new GUIStyle(_label) { fontSize = Mathf.RoundToInt(u * 1.9f), fontStyle = FontStyle.Normal, alignment = TextAnchor.UpperLeft };
+            _small.normal.textColor = new Color(0.25f, 0.2f, 0.18f);
+            _big = new GUIStyle(_label) { fontSize = Mathf.RoundToInt(u * 5f) };
+            _hud = new GUIStyle(_label) { alignment = TextAnchor.UpperLeft };
+            _hud.normal.textColor = new Color(0.25f, 0.2f, 0.18f);
+            _button = new GUIStyle(GUI.skin.button) { fontSize = Mathf.RoundToInt(u * 2.6f), fontStyle = FontStyle.Bold };
+        }
+    }
+}
