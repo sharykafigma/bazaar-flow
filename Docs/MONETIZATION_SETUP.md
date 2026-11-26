@@ -16,19 +16,19 @@ Asal kamai shuru karne ke liye neeche wale accounts banane hain, aur saari IDs *
 | 2 | **Payments profile / merchant account** (Play Console > Settings > Payments profile) | IAP ki kamai bank mein | Muft | IAP bechne se pehle |
 | 3 | **Unity account + Unity Cloud project** (cloud.unity.com) | Project ID, LevelPlay link | Muft | Ads se pehle |
 | 4 | **LevelPlay** (platform.ironsrc.com, Unity account se login) | **App Key** + 3 **Ad Unit IDs** (Rewarded, Interstitial, Banner) | Muft | Ads |
-| 5 | **Google AdMob** (admob.google.com) | **AdMob App ID** (ca-app-pub-...~...) + ad units LevelPlay ke andar | Muft | AdMob network ke liye |
-| 6 | AppLovin aur Mintegral (optional, baad mein) | Network keys, LevelPlay dashboard mein daalni hain | Muft | Soft launch ke baad, zyada kamai ke liye |
-| 7 | **Privacy policy URL** (koi bhi free page, maslan Google Sites) | Play Store aur ad networks dono maangte hain | Muft | Release se pehle |
+| 5 | Google AdMob, AppLovin, Mintegral (**abhi nahi**, baad mein) | Zyada ad networks = zyada kamai | Muft | Jab game chal pare (neeche section 8) |
+| 6 | **Privacy policy URL** (koi bhi free page, maslan Google Sites) | Play Store aur ad networks dono maangte hain | Muft | Release se pehle |
 
-Bank ki tafseel aur tax form (Pakistan se W-8BEN) AdMob/LevelPlay aur Play Console dono mein payment ke liye bharne honge.
+Shuru mein ads sirf **Unity Ads** network se aayenge (LevelPlay ke zariye). Is ke liye alag Unity Ads account nahi chahiye: LevelPlay mein Unity account se login karte hi Unity Ads network on ho jata hai.
+
+Bank ki tafseel aur tax form (Pakistan se W-8BEN) LevelPlay aur Play Console dono mein payment ke liye bharne honge.
 
 ## 2. Mujhe (Claude ko) kya bhejna hai
 
 Sirf yeh IDs bhej dein, main `MonetizationConfig.cs` mein laga dunga:
 
 - LevelPlay **Android App Key**
-- LevelPlay **Rewarded**, **Interstitial**, **Banner** ad unit IDs
-- **AdMob Android App ID** (yeh Unity mein: Ads Mediation > Developer Settings > LevelPlay Mediation Settings > Android App Key)
+- LevelPlay **Rewarded** aur **Interstitial** ad unit IDs (Banner ID sirf agar banner on karna ho)
 
 Password, bank details ya keystore kabhi chat mein na bhejein.
 
@@ -55,7 +55,8 @@ Test karne ke liye: Play Console > Settings > **License testing** mein apna Gmai
 ## 4. Unity mein packages (Window > Package Manager)
 
 1. **Ads Mediation** (`com.unity.services.levelplay`). "Ads IAP Mediation Adaptor" ya "Advertisement Legacy" NAHI.
-   Install pe "Mobile Dependency Resolver" import karein, phir Assets > Mobile Dependency Resolver > Android Resolver > Force Resolve.
+   Install pe "Mobile Dependency Resolver" import karein. Phir **Ads Mediation > Network Manager** mein sirf **Unity Ads** adapter install karein (AdMob nahi).
+   Phir phir Assets > Mobile Dependency Resolver > Android Resolver > Force Resolve.
 2. **In-App Purchasing** (`com.unity.purchasing`) version **5.x**.
 3. Menu **Belt Jam > Monetization > Refresh SDK Defines** dabayein. Console mein `LevelPlay=on, IAP=on` aana chahiye.
    (Yeh khud bhi hota hai. Package ke baghair bhi game compile hoti hai: editor mein ads/khareed "simulate" hote hain.)
@@ -92,3 +93,10 @@ Test karne ke liye: Play Console > Settings > **License testing** mein apna Gmai
 
 Gameplay se jor: `GameManager` mein `ContinueWithAd`, `DoubleCoinsWithAd`, `NextLevel`, `RetryAfterJam`, `UseBooster`.
 Boosters abhi chalte hain: **Sweep** (code mein Jhaaru) aur **Reveal** (Chashma). Extra Belt (ExtraPatri) aur Reverse (UltiBelt) gameplay mein ban jayen to `Economy.LiveBoosters` mein daal dein, shop aur packs khud un ko shamil kar lenge.
+
+## 8. Baad mein AdMob (ya aur networks) kaise jorein
+
+Code badalne ki zaroorat nahi. Sirf:
+1. AdMob account banayein, app add karein (`com.sharystudio.beltjam`), AdMob App ID lein.
+2. LevelPlay dashboard > SDK Networks mein AdMob on karke us ke ad unit IDs daalein.
+3. Unity: Ads Mediation > Network Manager > AdMob adapter install. Phir Ads Mediation > Developer Settings > LevelPlay Mediation Settings mein AdMob Android App Key. Force Resolve.
