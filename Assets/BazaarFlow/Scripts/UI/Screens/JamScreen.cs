@@ -4,7 +4,7 @@ using UnityEngine.UI;
 namespace BazaarFlow.UI
 {
     /// <summary>
-    /// Belt Jam (lose) popup: the card thuds in and shakes, then offers Continue (rewarded ad),
+    /// Lose popup ("Jammed!"): the card thuds in and shakes, then offers Continue (rewarded ad),
     /// Continue for coins, or Try Again.
     /// </summary>
     public class JamScreen : UIScreen
@@ -16,7 +16,7 @@ namespace BazaarFlow.UI
 
         protected override void Build()
         {
-            var content = UIFactory.Card(Safe, "BELT JAM!", new Vector2(900f, 1060f), out _card, UITheme.Red);
+            var content = UIFactory.Card(Safe, "JAMMED!", new Vector2(900f, 1060f), out _card, UITheme.Red);
             _card.Place(new Vector2(0.5f, 0.5f), new Vector2(0f, -20f), new Vector2(900f, 1060f));
             PopTarget = _card;
 

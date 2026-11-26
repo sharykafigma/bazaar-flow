@@ -5,7 +5,7 @@ using UnityEngine.UI;
 namespace BazaarFlow.UI
 {
     /// <summary>Vertical two-colour gradient on any uGUI Graphic (multiplies the Graphic's own colour).</summary>
-    [AddComponentMenu("Bazaar Flow/UI Gradient")]
+    [AddComponentMenu("Belt Jam/UI Gradient")]
     public class UIGradient : BaseMeshEffect
     {
         public Color Top = Color.white;

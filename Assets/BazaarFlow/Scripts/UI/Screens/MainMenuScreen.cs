@@ -4,7 +4,7 @@ using UnityEngine.UI;
 namespace BazaarFlow.UI
 {
     /// <summary>
-    /// Title screen: striped market awning, swaying bunting, the BAZAAR FLOW logo over slow sun rays,
+    /// Title screen: striped market awning, swaying bunting, the BELT JAM: Conveyor Sort logo over slow sun rays,
     /// a little market stall, and a big breathing PLAY button.
     /// </summary>
     public class MainMenuScreen : UIScreen
@@ -33,16 +33,16 @@ namespace BazaarFlow.UI
 
             // Logo
             _logo = UIFactory.Rect("Logo", Safe).Place(new Vector2(0.5f, 0.64f), Vector2.zero, new Vector2(960f, 420f));
-            var bazaar = UIFactory.Title(_logo, "BAZAAR", 230, UITheme.Gold);
+            var bazaar = UIFactory.Title(_logo, "BELT JAM", 210, UITheme.Gold);
             bazaar.rectTransform.Place(new Vector2(0.5f, 1f), new Vector2(0f, -110f), new Vector2(960f, 240f));
             bazaar.GetComponent<UIGradient>().Set(UITheme.Hex("#FFF2A8"), UITheme.Hex("#FFA51F"));
-            var flowTag = UIFactory.Rect("FlowTag", _logo).Place(new Vector2(0.5f, 0f), new Vector2(0f, 90f), new Vector2(520f, 160f));
+            var flowTag = UIFactory.Rect("FlowTag", _logo).Place(new Vector2(0.5f, 0f), new Vector2(0f, 90f), new Vector2(760f, 140f));
             var tagEdge = UIFactory.Image(flowTag, "Edge", UISprites.Rounded, UITheme.Ink);
             tagEdge.rectTransform.Stretch(-8f, -22f, -8f, -8f);
             var tagFace = UIFactory.Image(flowTag, "Face", UISprites.Rounded, Color.white);
             tagFace.rectTransform.Stretch();
             tagFace.Gradient(UITheme.Teal3D.Top, UITheme.Teal3D.Bottom);
-            var flow = UIFactory.Title(flowTag, "FLOW", 140, Color.white);
+            var flow = UIFactory.Title(flowTag, "CONVEYOR SORT", 96, Color.white);
             flow.rectTransform.Stretch(0f, 4f, 0f, 0f);
             _logo.localRotation = Quaternion.Euler(0, 0, 4f);
 

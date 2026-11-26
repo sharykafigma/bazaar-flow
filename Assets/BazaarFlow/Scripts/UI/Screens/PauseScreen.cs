@@ -129,7 +129,7 @@ namespace BazaarFlow.UI
             ((RectTransform)privacy.transform).Place(new Vector2(0.5f, 1f), new Vector2(0f, -y - 260f), new Vector2(700f, 130f));
             privacy.Clicked += () => UIServices.OpenPrivacyPolicy?.Invoke();
 
-            var version = UIFactory.Label(content, "Bazaar Flow  v" + Application.version, UITheme.SmallSize,
+            var version = UIFactory.Label(content, "Belt Jam: Conveyor Sort  v" + Application.version, UITheme.SmallSize,
                 UITheme.Ink.WithAlpha(0.55f), false);
             version.rectTransform.HStretch(0f, 30f, 60f, 0f);
         }

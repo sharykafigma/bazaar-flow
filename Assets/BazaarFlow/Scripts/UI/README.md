@@ -1,4 +1,4 @@
-# Bazaar Flow UI
+# Belt Jam: Conveyor Sort UI
 
 All menus and screens, built from code with uGUI (no prefabs, no scene setup). Press Play in any scene and the UI builds itself next to the gameplay prototype.
 
@@ -12,7 +12,7 @@ All menus and screens, built from code with uGUI (no prefabs, no scene setup). P
 | Pause | `Screens/PauseScreen.cs` | Sound / Music / Vibration switches, Resume, Restart, Home |
 | Settings | `Screens/PauseScreen.cs` | Switches, Restore Purchases, Privacy Policy, version |
 | Level Complete | `Screens/WinScreen.cs` | Stars, confetti, coin reward that flies into the counter, Next Level, 2x Coins (ad) |
-| Belt Jam | `Screens/JamScreen.cs` | Continue (ad), Continue for coins, Try Again |
+| Jammed! (lose) | `Screens/JamScreen.cs` | Continue (ad), Continue for coins, Try Again |
 | Shop | `Screens/ShopScreen.cs` | Starter pack, coin packs, No Ads, Booster Bundle, daily free booster |
 
 `UIRoot.cs` runs the flow. Android back button: closes popups, pauses the game, quits from the menu.
