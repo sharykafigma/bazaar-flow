@@ -42,3 +42,6 @@ belt jam, conveyor sort, conveyor puzzle, color sort, jam puzzle, sort puzzle, b
 - Feature graphic 1024x500 JPG/PNG
 - 4 to 8 phone screenshots, portrait 1080x1920 (min 320 px, max 3840 px, 9:16)
 - Optional: 30 s gameplay video on YouTube (unlisted is fine)
+
+## Contact
+- Support email (developer contact on the store page): tallah8808@gmail.com
