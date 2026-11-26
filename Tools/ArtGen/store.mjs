@@ -1,4 +1,4 @@
-// Google Play store graphics for Bazaar Flow.  Run from Tools/ArtGen:  node store.mjs
+// Google Play store graphics for Belt Jam: Conveyor Sort (v2 art style).  Run from Tools/ArtGen:  node store.mjs
 // Output: Assets/BazaarFlow/Art/Store/
 //   icon_1024.png, icon_512.png            hi-res app icon (full bleed, opaque, no text)
 //   icon_adaptive_fg_432.png / _bg_432.png Android adaptive icon layers (108dp @ xxxhdpi)
@@ -12,8 +12,14 @@ import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import zlib from 'node:zlib';
 import * as A from './art.mjs';
+import { body as goodsV2 } from './v2/goods.mjs';
+import * as G2 from './v2/goods.mjs';
+import * as S2 from './v2/stalls.mjs';
+import * as E2 from './v2/env.mjs';
+import { kitDefs } from './style.mjs';
 
-const { OL, C, shade, goodsBody } = A;
+const { OL, C, shade } = A;
+const goodsBody = goodsV2;
 const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(here, '../..');
 const out = path.join(root, 'Assets/BazaarFlow/Art/Store');
@@ -175,7 +181,7 @@ function iconForeground() {
 }
 
 const iconSvg = (w, h, vb, body) =>
-  `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="${vb}"><defs>${iconDefs()}</defs>${body}</svg>`;
+  `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="${vb}"><defs>${kitDefs()}${iconDefs()}</defs>${body}</svg>`;
 
 // Full icon at any size (vector, so 512 is rendered natively, not downscaled).
 const icon = size => iconSvg(size, size, '0 0 1024 1024', iconBackground() + iconForeground());
@@ -212,11 +218,11 @@ function feature(fontUrl) {
   }
   // belt (horizontal), y 392..462, built from the game's belt tile
   const beltY = 388, beltH = 74;
-  const beltTile = A.beltH(100);
+  const beltTile = E2.beltH();
   const trays = [], goodsRow = ['chai', 'aam', 'choori', 'diya', 'patang', 'lattoo', 'chai', 'aam', 'choori'];
   for (let k = 0; k < 9; k++) {
     const x = 62 + k * 112;
-    trays.push(place(A.tray(), x - 40, beltY - 3, 80, 80));
+    trays.push(place(G2.tray(), x - 40, beltY - 3, 80, 80));
     trays.push(good(goodsRow[k], x, beltY + 30, 66, (k % 2 ? 6 : -6)));
   }
   const title = (txt, x, y, size) => `
@@ -226,18 +232,18 @@ function feature(fontUrl) {
     <text x="${x}" y="${y}" font-size="${size}" text-anchor="middle" fill="url(#tGrad)" stroke="#b33a12" stroke-width="${size * 0.03}" stroke-linejoin="round">${txt}</text>
     <text x="${x}" y="${y}" font-size="${size}" text-anchor="middle" fill="url(#tShine)" clip-path="url(#shine${y})">${txt}</text>`;
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">
-  <defs>
+  <defs>${kitDefs()}
     <style>@font-face{font-family:'Lilita One';src:url('${fontUrl}') format('truetype');} text{font-family:'Lilita One',sans-serif;}</style>
     <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff7aa0"/><stop offset=".45" stop-color="#ffab5c"/><stop offset="1" stop-color="#ffd98a"/></linearGradient>
     <radialGradient id="sun" cx="512" cy="230" r="420" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#fff3c4" stop-opacity=".95"/><stop offset=".5" stop-color="#ffe08a" stop-opacity=".35"/><stop offset="1" stop-color="#ffd27a" stop-opacity="0"/></radialGradient>
     <linearGradient id="tGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe94a"/><stop offset=".5" stop-color="#ffb21a"/><stop offset="1" stop-color="#f2551d"/></linearGradient>
     <linearGradient id="tShine" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".55"/><stop offset="1" stop-color="#fff" stop-opacity=".15"/></linearGradient>
-    <clipPath id="shine196"><rect x="0" y="0" width="1024" height="${196 - 132 * 0.42}"/></clipPath>
-    <clipPath id="shine322"><rect x="0" y="0" width="1024" height="${322 - 132 * 0.42}"/></clipPath>
+    <clipPath id="shine232"><rect x="0" y="0" width="1024" height="${232 - 150 * 0.42}"/></clipPath>
+    <linearGradient id="ribbon" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e2493f"/><stop offset="1" stop-color="#a81f2c"/></linearGradient>
     <linearGradient id="floor" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#a8683a"/><stop offset="1" stop-color="#6e3f22"/></linearGradient>
     <pattern id="belt" patternUnits="userSpaceOnUse" x="0" y="${beltY}" width="${beltH}" height="${beltH}">${place(beltTile, 0, 0, beltH, beltH)}</pattern>
     <filter id="blur3" x="-10%" y="-20%" width="120%" height="150%"><feGaussianBlur stdDeviation="4"/></filter>
-    <filter id="drop" x="-20%" y="-20%" width="140%" height="150%"><feGaussianBlur in="SourceAlpha" stdDeviation="6"/><feOffset dy="8"/>
+    <filter id="fdrop" x="-20%" y="-20%" width="140%" height="150%"><feGaussianBlur in="SourceAlpha" stdDeviation="6"/><feOffset dy="8"/>
       <feComponentTransfer><feFuncA type="linear" slope=".4"/></feComponentTransfer><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter>
     <radialGradient id="fvig" gradientUnits="userSpaceOnUse" cx="512" cy="250" r="640" gradientTransform="translate(512 250) scale(1 .6) translate(-512 -250)">
       <stop offset=".7" stop-color="#4a0d26" stop-opacity="0"/><stop offset="1" stop-color="#4a0d26" stop-opacity=".3"/></radialGradient>
@@ -251,29 +257,35 @@ function feature(fontUrl) {
   <rect width="${W}" height="${H}" fill="url(#sun)"/>
   <g opacity=".9">${far.join('')}</g>
   ${near.join('')}
-  ${place(A.bunting(1024, 128), -10, -18, 1044, 130)}
-  ${place(A.bunting(1024, 128), 60, 40, 904, 92, 'opacity=".55" preserveAspectRatio="none"')}
+  ${place(E2.bunting(), -10, -18, 1044, 130)}
+  ${place(E2.bunting(), 60, 40, 904, 92, 'opacity=".55" preserveAspectRatio="none"')}
   <!-- kites -->
   <g transform="translate(250,128) rotate(-18)"><g transform="scale(.62) translate(-50,-50)"><g filter="url(#stk)">${goodsBody.patang()}</g></g></g>
   <g transform="translate(800,120) rotate(16)"><g transform="scale(.5) translate(-50,-50)"><g filter="url(#stk)">${goodsBody.patang().replaceAll(C.green, '#e2569a')}</g></g></g>
   <!-- stalls -->
-  <g filter="url(#drop)">
-    ${place(A.stall(0), 22, 168, 236, 236)}
-    ${place(A.stall(2), 766, 168, 236, 236)}
+  <g filter="url(#fdrop)">
+    ${place(S2.stall(0), 22, 168, 236, 236)}
+    ${place(S2.stall(2), 766, 168, 236, 236)}
   </g>
   ${good('chai', 140, 168 + 236 * 0.5, 96, -6)}
   ${good('aam', 884, 168 + 236 * 0.5, 96, 8)}
   <!-- floor + belt -->
   <rect x="0" y="${beltY + beltH - 6}" width="${W}" height="${H - beltY}" fill="url(#floor)"/>
   ${Array.from({ length: 12 }, (_, k) => `<path d="M${k * 92 + 20},${beltY + beltH + 6} v40" stroke="#5a3019" stroke-width="3" opacity=".5"/>`).join('')}
-  <g filter="url(#drop)"><rect x="-10" y="${beltY}" width="${W + 20}" height="${beltH}" fill="url(#belt)"/>
+  <g filter="url(#fdrop)"><rect x="-10" y="${beltY}" width="${W + 20}" height="${beltH}" fill="url(#belt)"/>
   <rect x="-10" y="${beltY}" width="${W + 20}" height="${beltH}" fill="none" stroke="${OL}" stroke-width="4"/></g>
   ${trays.join('')}
   <ellipse cx="512" cy="250" rx="330" ry="150" fill="url(#tGlow)"/>
   <!-- title -->
   <g transform="translate(512,0) rotate(-4) translate(-512,0)">
-    ${title('Bazaar', 512, 196, 132)}
-    ${title('Flow', 512, 322, 132)}
+    ${title('Belt Jam', 512, 232, 150)}
+    <g filter="url(#fdrop)">
+      <path d="M262,276 L312,268 L312,336 L262,344 L282,306 Z M762,276 L712,268 L712,336 L762,344 L742,306 Z" fill="#7d1622" stroke="${OL}" stroke-width="5" stroke-linejoin="round"/>
+      <path d="M300,262 Q512,248 724,262 L724,330 Q512,316 300,330 Z" fill="url(#ribbon)" stroke="${OL}" stroke-width="6" stroke-linejoin="round"/>
+      <path d="M310,270 Q512,257 714,270" fill="none" stroke="#ff9d8a" stroke-width="4" opacity=".8"/>
+    </g>
+    <text x="512" y="313" font-size="50" text-anchor="middle" fill="${OL}" stroke="${OL}" stroke-width="9" stroke-linejoin="round" letter-spacing="2">CONVEYOR SORT</text>
+    <text x="512" y="313" font-size="50" text-anchor="middle" fill="#fff6dc" letter-spacing="2">CONVEYOR SORT</text>
   </g>
   ${sparkle(250, 180, 46)}${sparkle(790, 150, 38, .95)}${sparkle(700, 322, 30, .9)}${sparkle(330, 330, 26, .85)}
   <rect width="${W}" height="${H}" fill="url(#fvig)"/>
@@ -354,7 +366,7 @@ const sheet = `<!doctype html><html><head><meta charset="utf-8"><style>
   h2{margin:0;font-size:16px;font-weight:600}
   .light{background:#f1f1f4;color:#333;padding:16px;border-radius:12px}
 </style></head><body><div class="wrap" id="sheet">
-  <h2>Bazaar Flow - Play store art</h2>
+  <h2>Belt Jam: Conveyor Sort - Play store art</h2>
   <div class="r">${cell('512 (Play hi-res icon, Play masks to ~30% radius)', iconImg(512, '30%'))}
     <div style="display:flex;flex-direction:column;gap:18px">
       <div class="r">${row([[96, '96']])}</div>
