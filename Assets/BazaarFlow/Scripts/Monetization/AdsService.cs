@@ -173,6 +173,8 @@ namespace BazaarFlow
         {
             // Privacy: call LevelPlayPrivacySettings.SetGDPRConsent / SetCCPA here, BEFORE Init,
             // once a consent screen exists (see Docs/MONETIZATION_SETUP.md).
+            if (MonetizationConfig.TestAdsActive)
+                Debug.LogWarning("[AdsService] Using LevelPlay TEST ad IDs (no revenue). Set the real app key in MonetizationConfig before release.");
             LevelPlay.OnInitSuccess += OnInitSuccess;
             LevelPlay.OnInitFailed += OnInitFailed;
             if (MonetizationConfig.LaunchLevelPlayTestSuite)

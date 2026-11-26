@@ -25,7 +25,9 @@ Bank ki tafseel aur tax form (Pakistan se W-8BEN) LevelPlay aur Play Console don
 
 ## 2. Mujhe (Claude ko) kya bhejna hai
 
-Sirf yeh IDs bhej dein, main `MonetizationConfig.cs` mein laga dunga:
+Ad unit IDs lag chuki hain: `rewarded_main` (ack6nftc7fpdwf6t) aur `interstitial_main` (z7sr4ewldylcjla7). Jab tak **App Key** khaali hai, game khud test ads chalati hai. Test ads zabardasti chalane ke liye `UseTestAds = true`.
+
+Baaqi IDs bhej dein, main `MonetizationConfig.cs` mein laga dunga:
 
 - LevelPlay **Android App Key**
 - LevelPlay **Rewarded** aur **Interstitial** ad unit IDs (Banner ID sirf agar banner on karna ho)

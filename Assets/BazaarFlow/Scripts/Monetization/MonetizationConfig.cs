@@ -7,16 +7,37 @@ namespace BazaarFlow
     public static class MonetizationConfig
     {
         // ---------------------------------------------------------------
-        // LevelPlay (ads). TEST values = LevelPlay's public demo app.
-        // Real values: LevelPlay dashboard > Apps (app key) and > Ad units.
-        // Launch plan: Unity Ads is the only network (install just the Unity Ads adapter in Network Manager).
+        // LevelPlay (ads). Launch plan: Unity Ads is the only network
+        // (install just the Unity Ads adapter in Ads Mediation > Network Manager).
         // Adding AdMob etc. later needs no code change here, only dashboard + adapter (Docs section 8).
         // In the Unity Editor any value gives mock ads (build target must be Android).
         // ---------------------------------------------------------------
-        public const string LevelPlayAppKey = "85460dcd";               // TODO: your Android app key
-        public const string RewardedAdUnitId = "76yy3nay3ceui2a3";      // TODO: your rewarded ad unit id
-        public const string InterstitialAdUnitId = "aeyqi3vqlv6o8sh9";  // TODO: your interstitial ad unit id
-        public const string BannerAdUnitId = "thnfvcsog13bhn08";        // TODO: only needed if BannerEnabled = true
+
+        /// <summary>
+        /// true = LevelPlay's public demo app (safe test ads, no money). false = our real "Belt Jam" ad units.
+        /// While the real app key is still empty, test ads are used automatically.
+        /// </summary>
+        public const bool UseTestAds = false;
+
+        // Real values from the LevelPlay dashboard (app "Belt Jam: Conveyor Sort").
+        const string ProdAppKey = "";                         // TODO: Apps > copy the App Key under the app name
+        const string ProdRewardedAdUnitId = "ack6nftc7fpdwf6t";      // rewarded_main
+        const string ProdInterstitialAdUnitId = "z7sr4ewldylcjla7";  // interstitial_main
+        const string ProdBannerAdUnitId = "";                 // none yet; only needed if BannerEnabled = true
+
+        // LevelPlay public demo app (test ads).
+        const string TestAppKey = "85460dcd";
+        const string TestRewardedAdUnitId = "76yy3nay3ceui2a3";
+        const string TestInterstitialAdUnitId = "aeyqi3vqlv6o8sh9";
+        const string TestBannerAdUnitId = "thnfvcsog13bhn08";
+
+        /// <summary>True when the demo IDs are in use (switch on, or real app key not filled in yet).</summary>
+        public static bool TestAdsActive => UseTestAds || string.IsNullOrEmpty(ProdAppKey);
+
+        public static string LevelPlayAppKey => TestAdsActive ? TestAppKey : ProdAppKey;
+        public static string RewardedAdUnitId => TestAdsActive ? TestRewardedAdUnitId : ProdRewardedAdUnitId;
+        public static string InterstitialAdUnitId => TestAdsActive ? TestInterstitialAdUnitId : ProdInterstitialAdUnitId;
+        public static string BannerAdUnitId => TestAdsActive ? TestBannerAdUnitId : ProdBannerAdUnitId;
 
         /// <summary>
         /// Opens the LevelPlay Test Suite on device after init. Turn OFF before the Play Store release.
