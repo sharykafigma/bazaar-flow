@@ -11,22 +11,22 @@ using UnityEngine;
 namespace BazaarFlow.EditorTools
 {
     /// <summary>
-    /// One-click Google Play release setup for Bazaar Flow.
-    /// Menu: Bazaar Flow > Apply Android Release Settings, then Bazaar Flow > Build Release AAB.
+    /// One-click Google Play release setup for Belt Jam: Conveyor Sort.
+    /// Menu: Belt Jam > Apply Android Release Settings, then Belt Jam > Build Release AAB.
     ///
     /// Signing secrets are NEVER stored in the repo. Set these environment variables before
     /// opening Unity (or fill Player Settings > Publishing Settings by hand):
     ///   BF_KEYSTORE_PATH   full path to your .keystore file (keep it OUTSIDE the project folder)
     ///   BF_KEYSTORE_PASS   keystore password
-    ///   BF_KEY_ALIAS       key alias (default: bazaarflow)
+    ///   BF_KEY_ALIAS       key alias (default: beltjam)
     ///   BF_KEY_PASS        key password
     /// </summary>
     public static class AndroidReleaseSetup
     {
         // Package name can NEVER change after the first upload to Play Console. Decide before uploading.
-        public const string PackageName = "com.sharystudio.bazaarflow";
+        public const string PackageName = "com.sharystudio.beltjam";
         public const string CompanyName = "Shary Studio";
-        public const string ProductName = "Bazaar Flow";
+        public const string ProductName = "Belt Jam";
 
         // Bump BOTH for every upload. VersionCode must always go up (1, 2, 3...).
         public const string VersionName = "0.1.0";
@@ -39,7 +39,7 @@ namespace BazaarFlow.EditorTools
         const string MainScenePath = "Assets/BazaarFlow/Scenes/Main.unity";
         const string OutputDir = "Builds/Android";
 
-        [MenuItem("Bazaar Flow/Apply Android Release Settings", priority = 1)]
+        [MenuItem("Belt Jam/Apply Android Release Settings", priority = 1)]
         public static void ApplySettings()
         {
             var android = NamedBuildTarget.Android;
@@ -75,17 +75,17 @@ namespace BazaarFlow.EditorTools
             EnsureMainSceneInBuild();
 
             AssetDatabase.SaveAssets();
-            Debug.Log($"[BazaarFlow] Android release settings applied: {PackageName} v{VersionName} ({VersionCode}), target API {TargetApi}, min API {MinApi}, AAB on.");
+            Debug.Log($"[BeltJam] Android release settings applied: {PackageName} v{VersionName} ({VersionCode}), target API {TargetApi}, min API {MinApi}, AAB on.");
         }
 
-        [MenuItem("Bazaar Flow/Build Release AAB", priority = 2)]
+        [MenuItem("Belt Jam/Build Release AAB", priority = 2)]
         public static void BuildReleaseAab()
         {
             ApplySettings();
 
             if (!PlayerSettings.Android.useCustomKeystore)
             {
-                EditorUtility.DisplayDialog("Bazaar Flow",
+                EditorUtility.DisplayDialog("Belt Jam",
                     "Release keystore set nahi hai. BF_KEYSTORE_PATH, BF_KEYSTORE_PASS, BF_KEY_ALIAS, BF_KEY_PASS set karein " +
                     "ya Player Settings > Publishing Settings mein keystore chunein, phir dobara build karein.", "OK");
                 return;
@@ -95,7 +95,7 @@ namespace BazaarFlow.EditorTools
             var options = new BuildPlayerOptions
             {
                 scenes = EditorBuildSettings.scenes.Where(s => s.enabled).Select(s => s.path).ToArray(),
-                locationPathName = Path.Combine(OutputDir, $"BazaarFlow-{VersionName}-{VersionCode}.aab"),
+                locationPathName = Path.Combine(OutputDir, $"BeltJam-{VersionName}-{VersionCode}.aab"),
                 target = BuildTarget.Android,
                 options = BuildOptions.None
             };
@@ -103,12 +103,12 @@ namespace BazaarFlow.EditorTools
             BuildReport report = BuildPipeline.BuildPlayer(options);
             if (report.summary.result == BuildResult.Succeeded)
             {
-                Debug.Log($"[BazaarFlow] AAB ready: {options.locationPathName} ({report.summary.totalSize / (1024 * 1024)} MB)");
+                Debug.Log($"[BeltJam] AAB ready: {options.locationPathName} ({report.summary.totalSize / (1024 * 1024)} MB)");
                 EditorUtility.RevealInFinder(options.locationPathName);
             }
             else
             {
-                Debug.LogError($"[BazaarFlow] Build failed: {report.summary.result}. Console mein errors dekhein.");
+                Debug.LogError($"[BeltJam] Build failed: {report.summary.result}. Console mein errors dekhein.");
             }
         }
 
@@ -117,14 +117,14 @@ namespace BazaarFlow.EditorTools
             string path = Environment.GetEnvironmentVariable("BF_KEYSTORE_PATH");
             if (string.IsNullOrEmpty(path) || !File.Exists(path))
             {
-                Debug.LogWarning("[BazaarFlow] BF_KEYSTORE_PATH not set or file missing. Signing left as-is (set it in Publishing Settings).");
+                Debug.LogWarning("[BeltJam] BF_KEYSTORE_PATH not set or file missing. Signing left as-is (set it in Publishing Settings).");
                 return;
             }
 
             PlayerSettings.Android.useCustomKeystore = true;
             PlayerSettings.Android.keystoreName = path;
             PlayerSettings.Android.keystorePass = Environment.GetEnvironmentVariable("BF_KEYSTORE_PASS") ?? "";
-            PlayerSettings.Android.keyaliasName = Environment.GetEnvironmentVariable("BF_KEY_ALIAS") ?? "bazaarflow";
+            PlayerSettings.Android.keyaliasName = Environment.GetEnvironmentVariable("BF_KEY_ALIAS") ?? "beltjam";
             PlayerSettings.Android.keyaliasPass = Environment.GetEnvironmentVariable("BF_KEY_PASS") ?? "";
         }
 
@@ -141,7 +141,7 @@ namespace BazaarFlow.EditorTools
             }
 
             EditorBuildSettings.scenes = new[] { new EditorBuildSettingsScene(MainScenePath, true) };
-            Debug.Log($"[BazaarFlow] Added {MainScenePath} to the build.");
+            Debug.Log($"[BeltJam] Added {MainScenePath} to the build.");
         }
     }
 }
