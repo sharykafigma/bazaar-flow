@@ -14,3 +14,9 @@
 .vs/
 .idea/
 .DS_Store
+*.symbols.zip
+
+# Signing secrets: never commit
+*.keystore
+*.jks
+keystore.properties
