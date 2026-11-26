@@ -74,25 +74,57 @@ namespace BazaarFlow
 
         // ---------- Generator ----------
 
+        /// <summary>Levels shown on the map. The generator keeps going past this for endless play.</summary>
+        public const int TotalLevels = 200;
+
+        static string IntroFor(int n)
+        {
+            switch (n)
+            {
+                case 11: return "Hidden crates! Their colour shows when they reach the front.";
+                case 16: return "Locked stall: it opens when its neighbour is done.";
+                case 21: return "Twin orders: some stalls want two colours at once.";
+                case 31: return "Rush hour! The belt speeds up now and then.";
+                case 41: return "Monsoon! Stalls pull their shutters down for a moment.";
+                case 61: return "Every twist at once. Good luck!";
+                default: return null;
+            }
+        }
+
         /// <summary>
         /// Builds a level that is always balanced. Crates are sorted roughly in the order the shops need them,
-        /// then shuffled a little: more shuffle = harder level. Every 5th level is a "mushkil" level.
+        /// then shuffled a little: more shuffle = harder. Every 5th level is hard, every 10th very hard.
+        /// Twists come in by level: hidden crates 11+, locked stall 16+, twin orders 21+, rush hour 31+,
+        /// shutters 41+, all mixed 61+.
         /// </summary>
         public static LevelData Generate(int n)
         {
             var rng = new System.Random(n * 7919 + 13);
-            bool hard = n % 5 == 0;
+            var difficulty = n % 10 == 0 ? Difficulty.VeryHard : n % 5 == 0 ? Difficulty.Hard : Difficulty.Normal;
 
-            int colorCount = n <= 10 ? 3 : 4;
-            int shopCount = n <= 7 ? 3 : n <= 15 ? 4 : 5;
+            int colorCount = n <= 10 ? 3 : n <= 20 ? 4 : n <= 50 ? 5 : 6;
+            int shopCount = n <= 7 ? 3 : n <= 15 ? 4 : n <= 30 ? 5 : 6;
             int maxOrders = n <= 5 ? 2 : 3;
-            int slots = n <= 10 ? 16 : n <= 15 ? 15 : 14;
-            if (hard) slots -= 2;
-            double shuffle = System.Math.Min(0.15 + 0.02 * (n - 4), 0.45) + (hard ? 0.1 : 0);
-            bool useHidden = n >= 11;
-            bool useLock = n >= 16;
+            int slots = n <= 10 ? 16 : n <= 30 ? 15 : 16;
+            if (difficulty == Difficulty.Hard) slots -= 2;
+            if (difficulty == Difficulty.VeryHard) slots -= 3;
+            double shuffle = System.Math.Min(0.15 + 0.02 * (n - 4), 0.45)
+                             + (difficulty == Difficulty.Hard ? 0.1 : difficulty == Difficulty.VeryHard ? 0.15 : 0);
 
-            var level = new LevelData { beltSlots = slots, beltSpeed = 2.6f };
+            double hiddenChance = n < 11 ? 0 : n < 41 ? 0.25 : 0.35;
+            int lockedShops = n < 16 ? 0 : n < 41 ? 1 : 1 + rng.Next(0, 2);
+            double twinChance = n < 21 ? 0 : n < 31 ? 0.3 : 0.25;
+            bool rush = (n >= 31 && n <= 40) || (n > 40 && n % 3 == 0);
+            int shutterShops = n < 41 ? 0 : n <= 60 ? 1 + rng.Next(0, 2) : rng.Next(0, 3);
+
+            var level = new LevelData
+            {
+                beltSlots = slots,
+                beltSpeed = 2.6f + System.Math.Min(n, 100) * 0.004f,
+                rushHour = rush,
+                difficulty = difficulty,
+                intro = IntroFor(n)
+            };
 
             // Pick which colours this level uses.
             var colors = Enumerable.Range(0, GameColors.Count).Select(i => (ItemColor)i)
@@ -107,16 +139,32 @@ namespace BazaarFlow
                 for (int o = 0; o < orders; o++)
                 {
                     var c = colors[colorCursor++ % colors.Count];
-                    shop.orders.Add(new OrderDef(c, rng.Next(3, 7)));
+                    if (rng.NextDouble() < twinChance)
+                    {
+                        var c2 = colors[colorCursor++ % colors.Count];
+                        if (c2 == c) c2 = colors[(colors.IndexOf(c) + 1) % colors.Count];
+                        shop.orders.Add(new OrderDef(c, rng.Next(2, 5), c2, rng.Next(2, 5)));
+                    }
+                    else shop.orders.Add(new OrderDef(c, rng.Next(3, 7)));
                 }
                 level.shops.Add(shop);
             }
-            if (useLock) level.shops[shopCount - 1].lockedUntilShop = 0;
+
+            // Locked stalls wait for an earlier stall (never a chain onto another locked one).
+            for (int k = 0; k < lockedShops; k++)
+            {
+                int target = shopCount - 1 - k;
+                level.shops[target].lockedUntilShop = k;
+            }
+            // Shutters on open stalls only, so a locked stall never also blinks.
+            var openShops = Enumerable.Range(0, shopCount).Where(i => level.shops[i].lockedUntilShop < 0)
+                .OrderBy(_ => rng.Next()).Take(shutterShops);
+            foreach (int i in openShops) level.shops[i].shutters = true;
 
             // "Need time" of every unit: wave by wave (all first orders, then all second orders ...).
             var needTimes = colors.ToDictionary(c => c, _ => new List<int>());
             int t = 0;
-            int maxWaves = level.shops.Max(s => s.orders.Count);
+            int maxWaves = level.shops.Max(sh => sh.orders.Count);
             for (int w = 0; w < maxWaves; w++)
             for (int s = 0; s < level.shops.Count; s++)
             {
@@ -124,8 +172,14 @@ namespace BazaarFlow
                 if (w >= shop.orders.Count) continue;
                 // A locked shop needs its goods later.
                 int lateBonus = shop.lockedUntilShop >= 0 ? 20 : 0;
-                for (int k = 0; k < shop.orders[w].count; k++)
-                    needTimes[shop.orders[w].color].Add(t++ + lateBonus);
+                var order = shop.orders[w];
+                int a = order.count, b = order.count2;
+                // Twin orders: interleave the two colours.
+                while (a > 0 || b > 0)
+                {
+                    if (a > 0) { needTimes[order.color].Add(t++ + lateBonus); a--; }
+                    if (b > 0) { needTimes[order.color2].Add(t++ + lateBonus); b--; }
+                }
             }
 
             // Cut each colour's total into crates of 3-5 and give each crate the need time of its first unit.
@@ -145,7 +199,7 @@ namespace BazaarFlow
                     i += size;
                 }
             }
-            crates.Sort((a, b) => a.when.CompareTo(b.when));
+            crates.Sort((x, y) => x.when.CompareTo(y.when));
 
             // Difficulty: swap neighbours at random.
             for (int i = 0; i < crates.Count - 1; i++)
@@ -159,14 +213,14 @@ namespace BazaarFlow
             }
 
             // Deal into columns, front first.
-            int columnCount = crates.Count <= 12 ? 3 : 4;
+            int columnCount = crates.Count <= 12 ? 3 : crates.Count <= 20 ? 4 : 5;
             for (int c = 0; c < columnCount; c++) level.columns.Add(new CrateColumnDef());
             for (int i = 0; i < crates.Count; i++)
             {
                 var col = level.columns[i % columnCount];
                 var crate = crates[i].crate;
                 // Never hide the front crate.
-                crate.hidden = useHidden && col.crates.Count > 0 && rng.NextDouble() < 0.25;
+                crate.hidden = col.crates.Count > 0 && rng.NextDouble() < hiddenChance;
                 col.crates.Add(crate);
             }
 

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace BazaarFlow
@@ -13,6 +14,12 @@ namespace BazaarFlow
         public float Length { get; private set; }
         public int SlotCount { get; private set; }
         public float Speed { get; private set; }
+
+        /// <summary>Speed multiplier (rush hour). 1 = normal.</summary>
+        public float SpeedMultiplier { get; set; } = 1f;
+
+        /// <summary>True while the Reverse booster runs the belt backwards.</summary>
+        public bool Reversed => _reverseLeft > 0f;
         public float Spacing => Length / SlotCount;
 
         /// <summary>Distance on the belt where the godown loads goods (bottom middle).</summary>
@@ -21,6 +28,7 @@ namespace BazaarFlow
         public BeltItem[] Slots { get; private set; }
 
         float _offset;
+        float _reverseLeft;
         Transform[] _slotMarkers;
 
         public void Init(Vector2 center, float width, float height, int slotCount, float speed)
@@ -54,12 +62,61 @@ namespace BazaarFlow
 
         public float SlotS(int i) => Mod(i * Spacing + _offset, Length);
 
-        /// <summary>Moves the belt. Returns how far it moved this frame.</summary>
+        /// <summary>Moves the belt. Returns how far it moved this frame (negative while reversed).</summary>
         public float Advance(float dt)
         {
-            float moved = Speed * dt;
+            float moved = Speed * SpeedMultiplier * dt;
+            if (_reverseLeft > 0f)
+            {
+                _reverseLeft -= moved;
+                moved = -moved;
+            }
             _offset = Mod(_offset + moved, Length);
             return moved;
+        }
+
+        /// <summary>Reverse booster: the belt runs backwards for one full lap.</summary>
+        public void ReverseOneLap() => _reverseLeft = Length;
+
+        /// <summary>
+        /// Extra Belt booster: adds slots. Goods keep their place on the loop as closely as possible.
+        /// </summary>
+        public void AddSlots(int extra)
+        {
+            if (extra <= 0) return;
+            var oldItems = new List<(float s, BeltItem item)>();
+            for (int i = 0; i < SlotCount; i++)
+                if (Slots[i] != null) oldItems.Add((SlotS(i), Slots[i]));
+
+            int newCount = SlotCount + extra;
+            var newMarkers = new Transform[newCount];
+            for (int i = 0; i < newCount; i++)
+            {
+                if (i < _slotMarkers.Length) newMarkers[i] = _slotMarkers[i];
+                else
+                {
+                    // Copy the look of an existing marker so art that re-skinned the slots still matches.
+                    var like = _slotMarkers[0].GetComponent<SpriteRenderer>();
+                    var sr = SpriteFactory.Create("Slot" + i, transform, like.sprite, like.color,
+                        Vector3.zero, _slotMarkers[0].localScale, like.sortingOrder);
+                    newMarkers[i] = sr.transform;
+                }
+            }
+            _slotMarkers = newMarkers;
+            SlotCount = newCount;
+            Slots = new BeltItem[newCount];
+
+            foreach (var entry in oldItems)
+            {
+                var item = entry.item;
+                int best = Mathf.RoundToInt(Mod(entry.s - _offset, Length) / Spacing) % newCount;
+                for (int k = 0; k < newCount; k++)
+                {
+                    int idx = (best + k) % newCount;
+                    if (Slots[idx] == null) { Slots[idx] = item; break; }
+                }
+            }
+            UpdateVisuals();
         }
 
         public void UpdateVisuals()
@@ -101,8 +158,8 @@ namespace BazaarFlow
         /// <summary>True when a point that was at prevS and then moved forward by "moved" passed over target.</summary>
         public bool Crossed(float prevS, float moved, float target)
         {
-            float d = Mod(target - prevS, Length);
-            return d < moved;
+            if (moved >= 0f) return Mod(target - prevS, Length) < moved;
+            return Mod(prevS - target, Length) < -moved;
         }
 
         public int CountFree()
