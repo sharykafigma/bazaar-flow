@@ -27,7 +27,7 @@ namespace BazaarFlow.Visuals
             if (t != null)
             {
                 t.wrapMode = TextureWrapMode.Clamp;
-                t.filterMode = FilterMode.Bilinear;
+                t.filterMode = t.mipmapCount > 1 ? FilterMode.Trilinear : FilterMode.Bilinear;
             }
             Textures[name] = t;
             return t;
