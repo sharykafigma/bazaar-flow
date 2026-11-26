@@ -9,12 +9,14 @@ namespace BazaarFlow
         // ---------------------------------------------------------------
         // LevelPlay (ads). TEST values = LevelPlay's public demo app.
         // Real values: LevelPlay dashboard > Apps (app key) and > Ad units.
+        // Launch plan: Unity Ads is the only network (install just the Unity Ads adapter in Network Manager).
+        // Adding AdMob etc. later needs no code change here, only dashboard + adapter (Docs section 8).
         // In the Unity Editor any value gives mock ads (build target must be Android).
         // ---------------------------------------------------------------
         public const string LevelPlayAppKey = "85460dcd";               // TODO: your Android app key
         public const string RewardedAdUnitId = "76yy3nay3ceui2a3";      // TODO: your rewarded ad unit id
         public const string InterstitialAdUnitId = "aeyqi3vqlv6o8sh9";  // TODO: your interstitial ad unit id
-        public const string BannerAdUnitId = "thnfvcsog13bhn08";        // TODO: your banner ad unit id
+        public const string BannerAdUnitId = "thnfvcsog13bhn08";        // TODO: only needed if BannerEnabled = true
 
         /// <summary>
         /// Opens the LevelPlay Test Suite on device after init. Turn OFF before the Play Store release.
