@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Bazaar Flow audio generator.
+Belt Jam: Conveyor Sort audio generator (code namespace and folders still say BazaarFlow).
 
 Every sound in Assets/BazaarFlow/Audio is synthesized by this script from plain
 math (sine waves, noise, Karplus-Strong plucked strings). No samples or

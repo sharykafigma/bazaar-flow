@@ -1,4 +1,4 @@
-# Bazaar Flow audio: sources and licenses
+# Belt Jam: Conveyor Sort audio: sources and licenses
 
 Every audio file in `Assets/BazaarFlow/Audio` was **synthesized from scratch** by
 `Tools/Audio/generate_audio.py` (numpy math: sine waves, filtered noise,
