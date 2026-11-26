@@ -25,11 +25,11 @@ Bank ki tafseel aur tax form (Pakistan se W-8BEN) LevelPlay aur Play Console don
 
 ## 2. Mujhe (Claude ko) kya bhejna hai
 
-Ad unit IDs lag chuki hain: `rewarded_main` (ack6nftc7fpdwf6t) aur `interstitial_main` (z7sr4ewldylcjla7). Jab tak **App Key** khaali hai, game khud test ads chalati hai. Test ads zabardasti chalane ke liye `UseTestAds = true`.
+Ad unit IDs lag chuki hain: `rewarded_main` (ack6nftc7fpdwf6t) aur `interstitial_main` (z7sr4ewldylcjla7). App Key `29ee68ec5` bhi lag chuki hai, is liye game ab asli ads chalati hai. Test ads zabardasti chalane ke liye `UseTestAds = true`.
 
 Baaqi IDs bhej dein, main `MonetizationConfig.cs` mein laga dunga:
 
-- LevelPlay **Android App Key**
+- ~~LevelPlay Android App Key~~ (mil gayi)
 - LevelPlay **Rewarded** aur **Interstitial** ad unit IDs (Banner ID sirf agar banner on karna ho)
 
 Password, bank details ya keystore kabhi chat mein na bhejein.

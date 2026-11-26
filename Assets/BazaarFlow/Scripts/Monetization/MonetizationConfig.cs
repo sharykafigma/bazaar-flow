@@ -20,7 +20,7 @@ namespace BazaarFlow
         public const bool UseTestAds = false;
 
         // Real values from the LevelPlay dashboard (app "Belt Jam: Conveyor Sort").
-        const string ProdAppKey = "";                         // TODO: Apps > copy the App Key under the app name
+        const string ProdAppKey = "29ee68ec5";                // Belt Jam: Conveyor Sort (Android)
         const string ProdRewardedAdUnitId = "ack6nftc7fpdwf6t";      // rewarded_main
         const string ProdInterstitialAdUnitId = "z7sr4ewldylcjla7";  // interstitial_main
         const string ProdBannerAdUnitId = "";                 // none yet; only needed if BannerEnabled = true
