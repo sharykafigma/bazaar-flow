@@ -30,7 +30,7 @@ namespace BazaarFlow.EditorTools
             EditorApplication.delayCall += Apply;
         }
 
-        [MenuItem("Bazaar Flow/Monetization/Refresh SDK Defines")]
+        [MenuItem("Belt Jam/Monetization/Refresh SDK Defines")]
         static void Apply()
         {
             bool levelPlay = TypeExists("Unity.Services.LevelPlay.LevelPlay");
@@ -44,7 +44,7 @@ namespace BazaarFlow.EditorTools
                 if (changed)
                 {
                     PlayerSettings.SetScriptingDefineSymbols(t, string.Join(";", set));
-                    Debug.Log($"[Bazaar Flow] {t.TargetName} defines: LevelPlay={(levelPlay ? "on" : "off")}, IAP={(iap ? "on" : "off")}");
+                    Debug.Log($"[Belt Jam] {t.TargetName} defines: LevelPlay={(levelPlay ? "on" : "off")}, IAP={(iap ? "on" : "off")}");
                 }
             }
         }
@@ -64,13 +64,13 @@ namespace BazaarFlow.EditorTools
                 catch { return false; }
             });
 
-        [MenuItem("Bazaar Flow/Monetization/Reset Wallet (coins, boosters, No Ads)")]
+        [MenuItem("Belt Jam/Monetization/Reset Wallet (coins, boosters, No Ads)")]
         static void ResetWallet()
         {
             PlayerPrefs.DeleteKey("bf_save");
             PlayerPrefs.DeleteKey("bf_coins");
             PlayerPrefs.Save();
-            Debug.Log("[Bazaar Flow] Wallet reset.");
+            Debug.Log("[Belt Jam] Wallet reset.");
         }
     }
 }

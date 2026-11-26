@@ -1,4 +1,7 @@
-# Bazaar Flow: ads aur purchases ka setup
+# Belt Jam: Conveyor Sort — ads aur purchases ka setup
+
+App ka naam **Belt Jam: Conveyor Sort**, Android package **`com.sharystudio.beltjam`**. LevelPlay, AdMob aur Play Console mein app banate waqt yehi naam aur package likhein.
+(Code ke andar folder/namespace abhi bhi `BazaarFlow` hai; player ko yeh nazar nahi aata.)
 
 Code mein ads (LevelPlay) aur purchases (Unity IAP / Google Play Billing) lag chuke hain. Abhi **test IDs** lagi hain.
 Asal kamai shuru karne ke liye neeche wale accounts banane hain, aur saari IDs **sirf ek file** mein badalni hain:
@@ -32,7 +35,7 @@ Password, bank details ya keystore kabhi chat mein na bhejein.
 ## 3. Google Play Console mein products (bilkul yehi IDs)
 
 Play Console > Monetize with Play > Products > **In-app products** > Create product:
-Product ke naam aur description **English** mein rakhein (game worldwide hai), maslan "No Ads", "Starter Pack", "Coin Pouch".
+Product ke naam aur description **English** mein rakhein (game worldwide hai). Product IDs ka `bf_` prefix sirf andar ki pehchan hai, isay waise hi rakhein. Maslan "No Ads", "Starter Pack", "Coin Pouch".
 
 | Product ID | Qisam | Qeemat (USD) | Kya milta hai |
 | --- | --- | --- | --- |
@@ -54,7 +57,7 @@ Test karne ke liye: Play Console > Settings > **License testing** mein apna Gmai
 1. **Ads Mediation** (`com.unity.services.levelplay`). "Ads IAP Mediation Adaptor" ya "Advertisement Legacy" NAHI.
    Install pe "Mobile Dependency Resolver" import karein, phir Assets > Mobile Dependency Resolver > Android Resolver > Force Resolve.
 2. **In-App Purchasing** (`com.unity.purchasing`) version **5.x**.
-3. Menu **Bazaar Flow > Monetization > Refresh SDK Defines** dabayein. Console mein `LevelPlay=on, IAP=on` aana chahiye.
+3. Menu **Belt Jam > Monetization > Refresh SDK Defines** dabayein. Console mein `LevelPlay=on, IAP=on` aana chahiye.
    (Yeh khud bhi hota hai. Package ke baghair bhi game compile hoti hai: editor mein ads/khareed "simulate" hote hain.)
 4. File > Build Profiles > **Android** > Switch Platform. Editor mein mock ads sirf Android target pe aate hain.
 5. Android 13+ ke liye `Assets/Plugins/Android/AndroidManifest.xml` (custom manifest) mein:
