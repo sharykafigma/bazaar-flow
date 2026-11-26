@@ -2,8 +2,8 @@
 
 All art is original and generated from code, so it can be changed and re-rendered at any size.
 
-- **Edit:** `Tools/ArtGen/art.mjs` (game sprites) and `Tools/ArtGen/store.mjs` (icon, feature graphic).
-- **Render:** `node Tools/ArtGen/render.mjs` (needs Node + Playwright with Chromium). `node Tools/ArtGen/store.mjs` for store art.
+- **Edit (v2, current):** `Tools/ArtGen/style.mjs` (shared style kit) and `Tools/ArtGen/v2/` (`goods.mjs`, `stalls.mjs`, `env.mjs`; contract in `v2/README.md`). `Tools/ArtGen/store.mjs` makes the icon and feature graphic. `art.mjs` + `render.mjs` are the old v1 look, kept for reference.
+- **Render:** `node Tools/ArtGen/render2.mjs` (needs Node + Playwright with Chromium). `node Tools/ArtGen/store.mjs` for store art.
 - **Preview a level screen:** `node Tools/ArtGen/preview.mjs out.png` (same world positions as the game).
 
 ## How it gets into the game
@@ -14,11 +14,11 @@ hide the placeholder sprites, so gameplay scripts need no changes. If `Resources
 look stays.
 
 `Scripts/Visuals/Editor/BazaarArtImporter.cs` sets import settings for everything in this folder (sprite, no mipmaps,
-ASTC on Android).
+ASTC on Android; mipmaps + trilinear because sprites are drawn at 2-3x their on-screen size, 4096 max for the background).
 
 ## Style
 
-- Warm desi bazaar, chunky flat vector, one dark-brown outline (`#3b2417`), light from top-left.
+- Warm desi bazaar, soft-lit glossy vector: volume gradients, outlines in a darker shade of each fill, inner rim light, light from top-left.
 - Goods have a cream "sticker" rim so they read on any background.
 - One goods type per colour, so shape also tells colours apart (colour-blind friendly):
   Red = chai, Blue = choori (bangles), Yellow = aam (mango), Green = patang (kite), Purple = lattoo (top), Orange = diya.
