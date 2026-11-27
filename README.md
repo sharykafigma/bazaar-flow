@@ -5,8 +5,8 @@ Conveyor sort puzzle for Android (Unity 6). Package: `com.sharystudio.beltjam`. 
 ## Unity mein kaise chalayein
 
 1. Unity Hub se naya project banayein: **Unity 6 (6000.x)**, template **Universal 2D** (ya 2D Core).
-2. Is repo ka `Assets` folder project mein copy karein (ya repo ko hi project folder bana lein).
-3. Koi bhi scene kholein (khaali scene bhi theek hai) aur **Play** dabayein. Menu, art, awaaz aur game khud ban jate hain.
+2. Is repo ka `Assets/BazaarFlow` folder apne project ke `Assets` mein copy karein, taake raasta `Assets/BazaarFlow/...` ho.
+3. Unity khud `Assets/BazaarFlow/Scenes/Main.unity` banata aur kholta hai (ya upar menu **Belt Jam > Open Main Scene**). Phir **Play** dabayein.
 4. Game view portrait rakhein, maslan 1080x1920.
 
 Phone pe: File > Build Profiles > Android > Switch Platform, phir Build And Run. Release build: [docs/README.md](docs/README.md).

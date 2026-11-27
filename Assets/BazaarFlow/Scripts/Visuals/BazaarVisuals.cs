@@ -61,7 +61,7 @@ namespace BazaarFlow.Visuals
 
         readonly List<ItemRec> _items = new List<ItemRec>();
         readonly List<CrateRec> _crates = new List<CrateRec>();
-        readonly HashSet<int> _knownItems = new HashSet<int>();
+        readonly HashSet<BeltItem> _knownItems = new HashSet<BeltItem>();
 
         SceneDecor _decor;
         Vector3 _camBase;
@@ -187,7 +187,7 @@ namespace BazaarFlow.Visuals
             {
                 var child = _root.GetChild(i);
                 var item = child.GetComponent<BeltItem>();
-                if (item == null || !_knownItems.Add(item.GetInstanceID())) continue;
+                if (item == null || !_knownItems.Add(item)) continue;
                 child.gameObject.AddComponent<ItemView>().Init(item);
                 _items.Add(new ItemRec { item = item, pos = child.position, color = item.Color });
                 if (_gate != null) _gate.Bump();
